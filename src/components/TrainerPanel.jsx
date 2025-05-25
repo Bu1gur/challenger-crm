@@ -1,60 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TrainerCard from "./TrainerCard";
 import TrainerClientsModal from "./TrainerClientsModal";
 import TrainerScheduleModal from "./TrainerScheduleModal";
 import TrainerModal from "./TrainerModal";
 
-// Заготовка панели тренеров
+// Новый API URL
+const API_URL = "https://challenger-crm.onrender.com/trainers";
+
 const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }) => {
-  const [trainers, setTrainers] = useState(() => {
-    const saved = localStorage.getItem("trainers");
-    if (saved) {
-      try {
-        const arr = JSON.parse(saved);
-        if (Array.isArray(arr)) return arr;
-      } catch {}
-    }
-    return [
-      {
-        id: 1,
-        name: "Иван Иванов",
-        phone: "+996700000001",
-        specialization: "Фитнес",
-        groups: ["Группа А", "Группа Б"],
-        comment: "",
-      },
-      {
-        id: 2,
-        name: "Мария Петрова",
-        phone: "+996700000002",
-        specialization: "Йога",
-        groups: ["Группа C"],
-        comment: "",
-      },
-    ];
-  });
+  const [trainers, setTrainers] = useState([]);
   const [selectedTrainer, setSelectedTrainer] = useState(null);
   const [showClients, setShowClients] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [showTrainerModal, setShowTrainerModal] = useState(false);
   const [editTrainer, setEditTrainer] = useState(null);
 
-  // Сохраняем тренеров в localStorage
-  React.useEffect(() => {
-    localStorage.setItem("trainers", JSON.stringify(trainers));
-  }, [trainers]);
+  // Получаем тренеров с сервера
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then(setTrainers)
+      .catch(() => setTrainers([]));
+  }, []);
 
   // Добавление/редактирование тренера
   const handleSaveTrainer = (trainer) => {
     if (trainer.id) {
-      setTrainers((prev) =>
-        prev.map((t) => (t.id === trainer.id ? { ...t, ...trainer, groups: trainer.groups || [] } : t))
-      );
+      // Обновление
+      fetch(`${API_URL}/${trainer.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trainer),
+      })
+        .then((res) => res.json())
+        .then((updated) =>
+          setTrainers((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
+        );
     } else {
-      setTrainers((prev) => [
-        ...prev,
-        { ...trainer, id: Date.now(), groups: trainer.groups || [] }, // сохраняем выбранные группы
-      ]);
+      // Добавление
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...trainer, groups: trainer.groups || [] }),
+      })
+        .then((res) => res.json())
+        .then((newTrainer) => setTrainers((prev) => [...prev, newTrainer]));
     }
     setShowTrainerModal(false);
     setEditTrainer(null);
@@ -63,7 +53,8 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
   // Удаление тренера
   const handleDeleteTrainer = (trainer) => {
     if (window.confirm("Удалить этого тренера?")) {
-      setTrainers((prev) => prev.filter((t) => t.id !== trainer.id));
+      fetch(`${API_URL}/${trainer.id}`, { method: "DELETE" })
+        .then(() => setTrainers((prev) => prev.filter((t) => t.id !== trainer.id)));
       setShowTrainerModal(false);
       setEditTrainer(null);
     }
@@ -72,10 +63,8 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
   // Получить клиентов тренера по группам
   const getTrainerClients = (trainer) => {
     if (!trainer) return [];
-    // Собираем клиентов, у которых группа входит в trainer.groups
     return (clients || []).filter(
-      (c) =>
-        Array.isArray(trainer.groups) && trainer.groups.includes(c.group)
+      (c) => Array.isArray(trainer.groups) && trainer.groups.includes(c.group)
     );
   };
 
@@ -98,7 +87,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
           <TrainerCard
             key={trainer.id}
             trainer={{ ...trainer, clientsCount: getTrainerClients(trainer).length }}
-            groups={groups} // <--- добавляем groups для отображения имён групп
+            groups={groups}
             onShowClients={() => {
               setSelectedTrainer(trainer);
               setShowClients(true);
@@ -118,7 +107,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
         <TrainerClientsModal
           trainer={selectedTrainer}
           clients={getTrainerClients(selectedTrainer)}
-          groups={groups} // <-- добавлено
+          groups={groups}
           onClose={() => setShowClients(false)}
           onAssignTrainer={onAssignTrainer}
         />
@@ -126,7 +115,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
       {showSchedule && selectedTrainer && (
         <TrainerScheduleModal
           trainer={selectedTrainer}
-          groups={groups} // <-- добавьте эту строку
+          groups={groups}
           onClose={() => setShowSchedule(false)}
         />
       )}

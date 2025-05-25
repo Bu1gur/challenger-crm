@@ -1,6 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+
+const API_PERIODS = "https://challenger-crm.onrender.com/periods";
+const API_GROUPS = "https://challenger-crm.onrender.com/groups";
+const API_PAYMENTS = "https://challenger-crm.onrender.com/payments";
+const API_FREEZE = "https://challenger-crm.onrender.com/freezeSettings";
 
 const TABS = [
   { key: "periods", label: "Сроки абонемента" },
@@ -42,6 +47,16 @@ const AdminPanel = ({
   payments, setPayments,
   freezeSettings, setFreezeSettings
 }) => {
+  const [tab, setTab] = useState("periods");
+
+  // --- CRUD для справочников через сервер ---
+  useEffect(() => {
+    fetch(API_PERIODS).then(res => res.json()).then(setPeriods).catch(() => setPeriods([]));
+    fetch(API_GROUPS).then(res => res.json()).then(setGroups).catch(() => setGroups([]));
+    fetch(API_PAYMENTS).then(res => res.json()).then(setPayments).catch(() => setPayments([]));
+    fetch(API_FREEZE).then(res => res.json()).then(arr => setFreezeSettings(arr[0] || {})).catch(() => setFreezeSettings({}));
+  }, [setPeriods, setGroups, setPayments, setFreezeSettings]);
+
   // --- Состояния для всех справочников ---
   // Периоды
   const [newPeriod, setNewPeriod] = React.useState({ label: "", months: 1, price: "", trainings: "" });
@@ -247,9 +262,6 @@ const AdminPanel = ({
     };
     reader.readAsArrayBuffer(file);
   };
-
-  // Добавить это состояние для вкладок:
-  const [tab, setTab] = React.useState("periods");
 
   return (
     <div className="max-w-[98vw] 2xl:max-w-[1600px] mx-auto bg-white rounded-3xl shadow-2xl p-4 sm:p-10 mt-2 sm:mt-8 border border-gray-100 animate-fade-in">
