@@ -104,7 +104,7 @@ const ClientPanel = ({
 					</button>
 					<button
 						className="bg-gradient-to-r from-green-100 to-green-300 hover:from-green-200 hover:to-green-400 text-green-800 px-4 py-2 rounded-xl shadow font-semibold transition-all duration-200"
-						onClick={handleExport}
+						onClick={handleExportRefs}
 					>
 						Экспорт в Excel
 					</button>

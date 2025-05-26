@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import ClientPanel from "./components/ClientPanel";
-import TrainerPanel from "./components/TrainerPanel";
+import ClientPanel from "./ClientPanel";
+import TrainerPanel from "./TrainerPanel";
 
 const initialGroups = [
   { value: "g1", name: "Группа А" },
