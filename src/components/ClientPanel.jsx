@@ -5,7 +5,7 @@ import ClientModal, { empty } from "./ClientModal";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const API_URL = "http://localhost:3001/clients";
+const API_URL = "https://challenger-crm.onrender.com/clients";
 
 const ClientPanel = ({
 	periods = [],
