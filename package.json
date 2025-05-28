@@ -1,0 +1,12 @@
+{
+  "name": "challenger-crm",
+  "version": "1.0.0",
+  "description": "Boxing Club CRM System",
+  "scripts": {
+    "build": "npm install --prefix frontend && npm run build --prefix frontend && mkdir -p backend/static && cp -r frontend/dist/* backend/static/",
+    "start": "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
