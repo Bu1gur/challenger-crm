@@ -1,5 +1,5 @@
 // Централизованная конфигурация API endpoints
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://localhost:8000");
 
 export const API_ENDPOINTS = {
   CLIENTS: `${BASE_URL}/clients`,
