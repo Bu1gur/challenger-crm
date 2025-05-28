@@ -1,10 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from .database import SessionLocal, engine, Base
-from . import models
+from database import SessionLocal, engine, Base
+import models
 from pydantic import BaseModel
 from typing import List, Optional
 import json
@@ -405,15 +409,15 @@ def delete_freeze_settings(settings_id: int, db: Session = Depends(get_db)):
     return {"ok": True}
 
 # Static files for production deployment
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+if os.path.exists("backend/static"):
+    app.mount("/static", StaticFiles(directory="backend/static"), name="static")
     
     @app.get("/")
     async def serve_spa():
-        return FileResponse('static/index.html')
+        return FileResponse('backend/static/index.html')
     
     @app.get("/{full_path:path}")
     async def serve_spa_routes(full_path: str):
         if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi"):
             raise HTTPException(status_code=404, detail="Not found")
-        return FileResponse('static/index.html')
+        return FileResponse('backend/static/index.html')
