@@ -3,8 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from database import SessionLocal, engine, Base
-import models
+from .database import SessionLocal, engine, Base
+from . import models
 from pydantic import BaseModel
 from typing import List, Optional
 import json
