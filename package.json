@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Boxing Club CRM System",
   "scripts": {
-    "build": "npm install --prefix frontend && npm run build --prefix frontend && mkdir -p backend/static && cp -r frontend/dist/* backend/static/",
+    "build": "echo 'Starting build...' && cd frontend && npm install && npm run build && cd .. && mkdir -p backend/static && cp -r frontend/dist/* backend/static/ && echo 'Build completed!' && ls -la backend/static/",
     "start": "npm run build && pip install -r requirements.txt --break-system-packages && /opt/render/.local/bin/uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
   },
   "engines": {
