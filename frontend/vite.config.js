@@ -2,6 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/challenger-crm/', // <-- обязательно для GitHub Pages!
+  base: process.env.NODE_ENV === 'production' ? '/' : '/challenger-crm/',
   plugins: [react()],
 });

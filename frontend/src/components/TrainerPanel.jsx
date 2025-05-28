@@ -3,8 +3,7 @@ import TrainerCard from "./TrainerCard";
 import TrainerClientsModal from "./TrainerClientsModal";
 import TrainerScheduleModal from "./TrainerScheduleModal";
 import TrainerModal from "./TrainerModal";
-
-const API_URL = "https://challenger-crm.onrender.com/trainers";
+import { API_ENDPOINTS } from "../config/api";
 
 const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }) => {
   const [trainers, setTrainers] = useState([]);
@@ -15,7 +14,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
   const [editTrainer, setEditTrainer] = useState(null);
 
   useEffect(() => {
-    fetch(API_URL)
+    fetch(API_ENDPOINTS.TRAINERS)
       .then((res) => res.json())
       .then(setTrainers)
       .catch(() => setTrainers([]));
@@ -23,7 +22,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
 
   const handleSaveTrainer = (trainer) => {
     if (trainer.id) {
-      fetch(`${API_URL}/${trainer.id}`, {
+      fetch(`${API_ENDPOINTS.TRAINERS}/${trainer.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(trainer),
@@ -33,7 +32,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
           setTrainers((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
         );
     } else {
-      fetch(API_URL, {
+      fetch(API_ENDPOINTS.TRAINERS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...trainer, groups: trainer.groups || [] }),
@@ -47,7 +46,7 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
 
   const handleDeleteTrainer = (trainer) => {
     if (window.confirm("Удалить этого тренера?")) {
-      fetch(`${API_URL}/${trainer.id}`, { method: "DELETE" })
+      fetch(`${API_ENDPOINTS.TRAINERS}/${trainer.id}`, { method: "DELETE" })
         .then(() => setTrainers((prev) => prev.filter((t) => t.id !== trainer.id)));
       setShowTrainerModal(false);
       setEditTrainer(null);

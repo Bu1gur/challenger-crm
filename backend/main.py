@@ -1,24 +1,28 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal, engine, Base
 import models
 from pydantic import BaseModel
 from typing import List, Optional
+import json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 # CORS для фронта
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5174").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174"
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,7 +65,7 @@ class ClientUpdate(ClientBase):
 class ClientOut(ClientBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- Клиенты ---
 @app.get("/clients", response_model=List[ClientOut])
@@ -108,7 +112,7 @@ class TrainerUpdate(TrainerBase):
 class TrainerOut(TrainerBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 @app.get("/trainers", response_model=List[TrainerOut])
 def get_trainers(db: Session = Depends(get_db)):
@@ -156,7 +160,7 @@ class GroupUpdate(GroupBase):
 class GroupOut(GroupBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 @app.get("/groups", response_model=List[GroupOut])
 def get_groups(db: Session = Depends(get_db)):
@@ -189,3 +193,227 @@ def delete_group(group_id: int, db: Session = Depends(get_db)):
     db.delete(db_group)
     db.commit()
     return {"ok": True}
+
+# --- Периоды абонементов ---
+class PeriodBase(BaseModel):
+    label: str
+    value: str
+    months: int
+    price: float
+    trainings: int
+
+class PeriodCreate(PeriodBase):
+    pass
+class PeriodUpdate(PeriodBase):
+    pass
+class PeriodOut(PeriodBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+@app.get("/periods", response_model=List[PeriodOut])
+def get_periods(db: Session = Depends(get_db)):
+    return db.query(models.Period).all()
+
+@app.post("/periods", response_model=PeriodOut)
+def create_period(period: PeriodCreate, db: Session = Depends(get_db)):
+    db_period = models.Period(**period.dict())
+    db.add(db_period)
+    db.commit()
+    db.refresh(db_period)
+    return db_period
+
+@app.put("/periods/{period_id}", response_model=PeriodOut)
+def update_period(period_id: int, period: PeriodUpdate, db: Session = Depends(get_db)):
+    db_period = db.query(models.Period).filter(models.Period.id == period_id).first()
+    if not db_period:
+        raise HTTPException(status_code=404, detail="Period not found")
+    for key, value in period.dict(exclude_unset=True).items():
+        setattr(db_period, key, value)
+    db.commit()
+    db.refresh(db_period)
+    return db_period
+
+@app.delete("/periods/{period_id}")
+def delete_period(period_id: int, db: Session = Depends(get_db)):
+    db_period = db.query(models.Period).filter(models.Period.id == period_id).first()
+    if not db_period:
+        raise HTTPException(status_code=404, detail="Period not found")
+    db.delete(db_period)
+    db.commit()
+    return {"ok": True}
+
+# --- Способы оплаты ---
+class PaymentBase(BaseModel):
+    label: str
+    value: str
+    type: str
+    banks: Optional[List[str]] = []
+
+class PaymentCreate(PaymentBase):
+    pass
+class PaymentUpdate(PaymentBase):
+    pass
+class PaymentOut(PaymentBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+@app.get("/payments", response_model=List[PaymentOut])
+def get_payments(db: Session = Depends(get_db)):
+    payments = db.query(models.Payment).all()
+    # Deserialize JSON fields
+    for payment in payments:
+        if payment.banks:
+            try:
+                payment.banks = json.loads(payment.banks)
+            except:
+                payment.banks = []
+        else:
+            payment.banks = []
+    return payments
+
+@app.post("/payments", response_model=PaymentOut)
+def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
+    payment_dict = payment.dict()
+    # Serialize JSON fields
+    if payment_dict.get('banks'):
+        payment_dict['banks'] = json.dumps(payment_dict['banks'])
+    
+    db_payment = models.Payment(**payment_dict)
+    db.add(db_payment)
+    db.commit()
+    db.refresh(db_payment)
+    
+    # Deserialize for response
+    if db_payment.banks:
+        try:
+            db_payment.banks = json.loads(db_payment.banks)
+        except:
+            db_payment.banks = []
+    return db_payment
+
+@app.put("/payments/{payment_id}", response_model=PaymentOut)
+def update_payment(payment_id: int, payment: PaymentUpdate, db: Session = Depends(get_db)):
+    db_payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    if not db_payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    for key, value in payment.dict(exclude_unset=True).items():
+        if key == 'banks' and value:
+            value = json.dumps(value)
+        setattr(db_payment, key, value)
+    
+    db.commit()
+    db.refresh(db_payment)
+    
+    # Deserialize for response
+    if db_payment.banks:
+        try:
+            db_payment.banks = json.loads(db_payment.banks)
+        except:
+            db_payment.banks = []
+    return db_payment
+
+@app.delete("/payments/{payment_id}")
+def delete_payment(payment_id: int, db: Session = Depends(get_db)):
+    db_payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    if not db_payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    db.delete(db_payment)
+    db.commit()
+    return {"ok": True}
+
+# --- Настройки заморозки ---
+class FreezeSettingsBase(BaseModel):
+    maxDays: int = 30
+    reasons: List[str] = []
+    requireConfirm: bool = False
+
+class FreezeSettingsCreate(FreezeSettingsBase):
+    pass
+class FreezeSettingsUpdate(FreezeSettingsBase):
+    pass
+class FreezeSettingsOut(FreezeSettingsBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+@app.get("/freezeSettings", response_model=List[FreezeSettingsOut])
+def get_freeze_settings(db: Session = Depends(get_db)):
+    settings = db.query(models.FreezeSettings).all()
+    # Deserialize JSON fields
+    for setting in settings:
+        if setting.reasons:
+            try:
+                setting.reasons = json.loads(setting.reasons)
+            except:
+                setting.reasons = []
+        else:
+            setting.reasons = []
+    return settings
+
+@app.post("/freezeSettings", response_model=FreezeSettingsOut)
+def create_freeze_settings(freeze_settings: FreezeSettingsCreate, db: Session = Depends(get_db)):
+    settings_dict = freeze_settings.dict()
+    # Serialize JSON fields
+    if settings_dict.get('reasons'):
+        settings_dict['reasons'] = json.dumps(settings_dict['reasons'])
+    
+    db_freeze_settings = models.FreezeSettings(**settings_dict)
+    db.add(db_freeze_settings)
+    db.commit()
+    db.refresh(db_freeze_settings)
+    
+    # Deserialize for response
+    if db_freeze_settings.reasons:
+        try:
+            db_freeze_settings.reasons = json.loads(db_freeze_settings.reasons)
+        except:
+            db_freeze_settings.reasons = []
+    return db_freeze_settings
+
+@app.put("/freezeSettings/{settings_id}", response_model=FreezeSettingsOut)
+def update_freeze_settings(settings_id: int, freeze_settings: FreezeSettingsUpdate, db: Session = Depends(get_db)):
+    db_freeze_settings = db.query(models.FreezeSettings).filter(models.FreezeSettings.id == settings_id).first()
+    if not db_freeze_settings:
+        raise HTTPException(status_code=404, detail="Freeze settings not found")
+    
+    for key, value in freeze_settings.dict(exclude_unset=True).items():
+        if key == 'reasons' and value:
+            value = json.dumps(value)
+        setattr(db_freeze_settings, key, value)
+    
+    db.commit()
+    db.refresh(db_freeze_settings)
+    
+    # Deserialize for response
+    if db_freeze_settings.reasons:
+        try:
+            db_freeze_settings.reasons = json.loads(db_freeze_settings.reasons)
+        except:
+            db_freeze_settings.reasons = []
+    return db_freeze_settings
+
+@app.delete("/freezeSettings/{settings_id}")
+def delete_freeze_settings(settings_id: int, db: Session = Depends(get_db)):
+    db_freeze_settings = db.query(models.FreezeSettings).filter(models.FreezeSettings.id == settings_id).first()
+    if not db_freeze_settings:
+        raise HTTPException(status_code=404, detail="Freeze settings not found")
+    db.delete(db_freeze_settings)
+    db.commit()
+    return {"ok": True}
+
+# Static files for production deployment
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+    
+    @app.get("/")
+    async def serve_spa():
+        return FileResponse('static/index.html')
+    
+    @app.get("/{full_path:path}")
+    async def serve_spa_routes(full_path: str):
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi"):
+            raise HTTPException(status_code=404, detail="Not found")
+        return FileResponse('static/index.html')

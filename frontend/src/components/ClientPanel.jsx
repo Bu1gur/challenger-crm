@@ -4,9 +4,7 @@ import Table from "./Table";
 import ClientModal, { empty } from "./ClientModal";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
-// Используйте переменную окружения VITE_API_URL для поддержки локальной и продакшн-среды
-const API_URL = import.meta.env.VITE_API_URL || "https://challenger-crm.onrender.com/clients";
+import { API_ENDPOINTS } from "../config/api";
 
 const ClientPanel = ({
 	periods = [],
@@ -30,7 +28,7 @@ const ClientPanel = ({
 	const fetchClients = () => {
 		setLoading(true);
 		setError(null);
-		fetch(API_URL)
+		fetch(API_ENDPOINTS.CLIENTS)
 			.then((res) => {
 				if (!res.ok) throw new Error(res.statusText);
 				return res.json();
@@ -53,7 +51,7 @@ const ClientPanel = ({
 		setLoading(true);
 		setError(null);
 		if (client.id) {
-			fetch(`${API_URL}/${client.id}`, {
+			fetch(`${API_ENDPOINTS.CLIENTS}/${client.id}`, {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(client),
@@ -70,7 +68,7 @@ const ClientPanel = ({
 				})
 				.finally(() => setLoading(false));
 		} else {
-			fetch(API_URL, {
+			fetch(API_ENDPOINTS.CLIENTS, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(client),
@@ -79,7 +77,10 @@ const ClientPanel = ({
 					if (!res.ok) throw new Error(res.statusText);
 					return res.json();
 				})
-				.then(() => fetchClients())
+				.then((newClient) => {
+					setClients((prev) => [...prev, newClient]);
+					fetchClients(); // чтобы синхронизировать с сервером (на всякий случай)
+				})
 				.catch((e) => {
 					setError(e.message);
 					console.error("Ошибка добавления клиента:", e);
@@ -92,7 +93,7 @@ const ClientPanel = ({
 	// Мягкое удаление клиента (оставляет в базе)
 	const handleDelete = (id) => {
 		if (window.confirm("Удалить этого клиента? Это действие необратимо.")) {
-			fetch(`${API_URL}/${id}`, { method: "DELETE" })
+			fetch(`${API_ENDPOINTS.CLIENTS}/${id}`, { method: "DELETE" })
 				.then(() => setClients((prev) => prev.filter((c) => c.id !== id)));
 		}
 	};

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Date, Text, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -41,3 +41,27 @@ class Group(Base):
     time_start = Column(String, nullable=True)
     time_end = Column(String, nullable=True)
     comment = Column(Text, nullable=True)
+
+class Period(Base):
+    __tablename__ = "periods"
+    id = Column(Integer, primary_key=True, index=True)
+    label = Column(String, nullable=False)
+    value = Column(String, nullable=False, unique=True)
+    months = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)  # в рублях
+    trainings = Column(Integer, nullable=False)
+
+class Payment(Base):
+    __tablename__ = "payments"
+    id = Column(Integer, primary_key=True, index=True)
+    label = Column(String, nullable=False)
+    value = Column(String, nullable=False, unique=True)
+    type = Column(String, nullable=False)  # cash, card, transfer
+    banks = Column(Text, nullable=True)  # JSON список банков
+
+class FreezeSettings(Base):
+    __tablename__ = "freeze_settings"
+    id = Column(Integer, primary_key=True, index=True)
+    maxDays = Column(Integer, default=30)
+    reasons = Column(Text, nullable=True)  # JSON список причин
+    requireConfirm = Column(Boolean, default=False)

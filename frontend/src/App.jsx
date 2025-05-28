@@ -4,13 +4,14 @@ import Sidebar from "./components/Sidebar";
 import ClientPanel from "./components/ClientPanel";
 import TrainerPanel from "./components/TrainerPanel";
 import AdminPanel from "./components/AdminPanel";
+import { periods, payments, groups, freezeSettings } from "./data/index";
 
 const App = () => {
   const [section, setSection] = React.useState("clients");
-  const [periods, setPeriods] = React.useState([]);
-  const [groups, setGroups] = React.useState([]);
-  const [payments, setPayments] = React.useState([]);
-  const [freezeSettings, setFreezeSettings] = React.useState({});
+  const [periodsState, setPeriods] = React.useState(periods);
+  const [groupsState, setGroups] = React.useState(groups);
+  const [paymentsState, setPayments] = React.useState(payments);
+  const [freezeSettingsState, setFreezeSettings] = React.useState(freezeSettings);
   const [clients, setClients] = React.useState([]);
 
   return (
@@ -52,19 +53,18 @@ const App = () => {
                 Админка
               </button>
             </div>
-            {section === "clients" && (
-              <ClientPanel
-                clients={clients}
-                setClients={setClients}
-                periods={periods}
-                groups={groups}
-                payments={payments}
-                freezeSettings={freezeSettings}
-                setPeriods={setPeriods}
-                setGroups={setGroups}
-                setPayments={setPayments}
-                setFreezeSettings={setFreezeSettings}
-              />
+            {section === "clients" && (            <ClientPanel
+              clients={clients}
+              setClients={setClients}
+              periods={periodsState}
+              groups={groupsState}
+              payments={paymentsState}
+              freezeSettings={freezeSettingsState}
+              setPeriods={setPeriods}
+              setGroups={setGroups}
+              setPayments={setPayments}
+              setFreezeSettings={setFreezeSettings}
+            />
             )}
             {section === "trainers" && (
               <TrainerPanel

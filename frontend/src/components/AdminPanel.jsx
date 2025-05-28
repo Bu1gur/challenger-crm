@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
-const API_PERIODS = "https://challenger-crm.onrender.com/periods";
-const API_GROUPS = "https://challenger-crm.onrender.com/groups";
-const API_PAYMENTS = "https://challenger-crm.onrender.com/payments";
-const API_FREEZE = "https://challenger-crm.onrender.com/freezeSettings";
+import { API_ENDPOINTS } from "../config/api";
 
 const TABS = [
   { key: "periods", label: "Сроки абонемента" },
@@ -51,10 +47,10 @@ const AdminPanel = ({
 
   // --- CRUD для справочников через сервер ---
   useEffect(() => {
-    fetch(API_PERIODS).then(res => res.json()).then(setPeriods).catch(() => setPeriods([]));
-    fetch(API_GROUPS).then(res => res.json()).then(setGroups).catch(() => setGroups([]));
-    fetch(API_PAYMENTS).then(res => res.json()).then(setPayments).catch(() => setPayments([]));
-    fetch(API_FREEZE).then(res => res.json()).then(arr => setFreezeSettings(arr[0] || {})).catch(() => setFreezeSettings({}));
+    fetch(API_ENDPOINTS.PERIODS).then(res => res.json()).then(setPeriods).catch(() => setPeriods([]));
+    fetch(API_ENDPOINTS.GROUPS).then(res => res.json()).then(setGroups).catch(() => setGroups([]));
+    fetch(API_ENDPOINTS.PAYMENTS).then(res => res.json()).then(setPayments).catch(() => setPayments([]));
+    fetch(API_ENDPOINTS.FREEZE_SETTINGS).then(res => res.json()).then(arr => setFreezeSettings(arr[0] || {})).catch(() => setFreezeSettings({}));
   }, [setPeriods, setGroups, setPayments, setFreezeSettings]);
 
   // --- Состояния для всех справочников ---
@@ -114,53 +110,151 @@ const AdminPanel = ({
 
   // --- CRUD для всех справочников ---
   // Периоды
-  const addPeriod = () => {
+  const addPeriod = async () => {
     const errors = validatePeriod(newPeriod);
     setPeriodErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    setPeriods([
-      ...periods,
-      {
-        label: newPeriod.label,
-        value: `${newPeriod.months}m_${Date.now()}`,
-        months: Number(newPeriod.months),
-        price: Number(newPeriod.price),
-        trainings: Number(newPeriod.trainings),
-      },
-    ]);
-    setNewPeriod({ label: "", months: 1, price: "", trainings: "" });
-    setPeriodErrors({});
+    
+    try {
+      const response = await fetch(API_ENDPOINTS.PERIODS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: newPeriod.label,
+          value: `${newPeriod.months}m_${Date.now()}`,
+          months: Number(newPeriod.months),
+          price: Number(newPeriod.price),
+          trainings: Number(newPeriod.trainings),
+        })
+      });
+      if (response.ok) {
+        const createdPeriod = await response.json();
+        setPeriods([...periods, createdPeriod]);
+        setNewPeriod({ label: "", months: 1, price: "", trainings: "" });
+        setPeriodErrors({});
+      }
+    } catch (error) {
+      console.error('Error creating period:', error);
+    }
   };
+  
   const startEditPeriod = (p) => setEditPeriod({ ...p });
-  const saveEditPeriod = () => {
+  
+  const saveEditPeriod = async () => {
     const errors = validatePeriod(editPeriod);
     setPeriodErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    setPeriods(periods.map(p => p.value === editPeriod.value ? editPeriod : p));
-    setEditPeriod(null);
-    setPeriodErrors({});
+    
+    try {
+      const response = await fetch(`${API_ENDPOINTS.PERIODS}/${editPeriod.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: editPeriod.label,
+          value: editPeriod.value,
+          months: Number(editPeriod.months),
+          price: Number(editPeriod.price),
+          trainings: Number(editPeriod.trainings),
+        })
+      });
+      if (response.ok) {
+        const updatedPeriod = await response.json();
+        setPeriods(periods.map(p => p.id === editPeriod.id ? updatedPeriod : p));
+        setEditPeriod(null);
+        setPeriodErrors({});
+      }
+    } catch (error) {
+      console.error('Error updating period:', error);
+    }
+  };
+  
+  const deletePeriod = async (id) => {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.PERIODS}/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setPeriods(periods.filter(p => p.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting period:', error);
+    }
   };
 
   // Группы
   const toggleDay = (day, groupObj, setGroupObj) => {
     setGroupObj(g => ({ ...g, days: g.days.includes(day) ? g.days.filter(d => d !== day) : [...g.days, day] }));
   };
-  const addGroup = () => {
+  
+  const addGroup = async () => {
     const errors = validateGroup(newGroup);
     setGroupErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    setGroups([...groups, { ...newGroup, value: `g${Date.now()}` }]);
-    setNewGroup({ name: "", days: [], timeStart: "", timeEnd: "" });
-    setGroupErrors({});
+    
+    try {
+      const response = await fetch(API_ENDPOINTS.GROUPS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newGroup.name,
+          days: newGroup.days.join(','),
+          time_start: newGroup.timeStart,
+          time_end: newGroup.timeEnd,
+          comment: newGroup.comment || ''
+        })
+      });
+      if (response.ok) {
+        const createdGroup = await response.json();
+        setGroups([...groups, createdGroup]);
+        setNewGroup({ name: "", days: [], timeStart: "", timeEnd: "" });
+        setGroupErrors({});
+      }
+    } catch (error) {
+      console.error('Error creating group:', error);
+    }
   };
-  const startEditGroup = (g) => setEditGroup({ ...g });
-  const saveEditGroup = () => {
+  
+  const startEditGroup = (g) => setEditGroup({ ...g, days: g.days ? g.days.split(',') : [] });
+  
+  const saveEditGroup = async () => {
     const errors = validateGroup(editGroup);
     setGroupErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    setGroups(groups.map(g => g.value === editGroup.value ? editGroup : g));
-    setEditGroup(null);
-    setGroupErrors({});
+    
+    try {
+      const response = await fetch(`${API_ENDPOINTS.GROUPS}/${editGroup.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editGroup.name,
+          days: editGroup.days.join(','),
+          time_start: editGroup.timeStart,
+          time_end: editGroup.timeEnd,
+          comment: editGroup.comment || ''
+        })
+      });
+      if (response.ok) {
+        const updatedGroup = await response.json();
+        setGroups(groups.map(g => g.id === editGroup.id ? updatedGroup : g));
+        setEditGroup(null);
+        setGroupErrors({});
+      }
+    } catch (error) {
+      console.error('Error updating group:', error);
+    }
+  };
+  
+  const deleteGroup = async (id) => {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.GROUPS}/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setGroups(groups.filter(g => g.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting group:', error);
+    }
   };
 
   // Способы оплаты
@@ -180,35 +274,90 @@ const AdminPanel = ({
       setNewPayment(p => ({ ...p, banks: (p.banks || []).filter(b => b !== bank) }));
     }
   };
-  const addPayment = () => {
+  const addPayment = async () => {
     const errors = validatePayment(newPayment);
     setPaymentErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    setPayments([
-      ...payments,
-      {
-        label: newPayment.label,
-        value: newPayment.type + "_" + Date.now(),
-        type: newPayment.type,
-        banks: newPayment.type === "transfer" ? newPayment.banks : [],
-      },
-    ]);
-    setNewPayment({ label: "", value: "", type: "cash", banks: [] });
-    setPaymentErrors({});
+    
+    try {
+      const response = await fetch(API_ENDPOINTS.PAYMENTS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: newPayment.label,
+          value: newPayment.type + "_" + Date.now(),
+          type: newPayment.type,
+          banks: newPayment.type === "transfer" ? newPayment.banks : [],
+        })
+      });
+      if (response.ok) {
+        const createdPayment = await response.json();
+        setPayments([...payments, createdPayment]);
+        setNewPayment({ label: "", value: "", type: "cash", banks: [] });
+        setPaymentErrors({});
+      }
+    } catch (error) {
+      console.error('Error creating payment:', error);
+    }
   };
+  
   const startEditPayment = (p) => setEditPayment({ ...p });
-  const saveEditPayment = () => {
+  
+  const saveEditPayment = async () => {
     const errors = validatePayment(editPayment);
     setPaymentErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    setPayments(payments.map(p => p.value === editPayment.value ? editPayment : p));
-    setEditPayment(null);
-    setPaymentErrors({});
+    
+    try {
+      const response = await fetch(`${API_ENDPOINTS.PAYMENTS}/${editPayment.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: editPayment.label,
+          value: editPayment.value,
+          type: editPayment.type,
+          banks: editPayment.type === "transfer" ? editPayment.banks : [],
+        })
+      });
+      if (response.ok) {
+        const updatedPayment = await response.json();
+        setPayments(payments.map(p => p.id === editPayment.id ? updatedPayment : p));
+        setEditPayment(null);
+        setPaymentErrors({});
+      }
+    } catch (error) {
+      console.error('Error updating payment:', error);
+    }
+  };
+  
+  const deletePayment = async (id) => {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.PAYMENTS}/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setPayments(payments.filter(p => p.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+    }
   };
 
   // Условия заморозки
-  const saveFreezeSettings = () => {
-    setFreezeSettings({ maxDays, reasons, requireConfirm });
+  const saveFreezeSettings = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.FREEZE_SETTINGS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ maxDays, reasons, requireConfirm })
+      });
+      if (response.ok) {
+        const updatedSettings = await response.json();
+        setFreezeSettings(updatedSettings);
+      }
+    } catch (error) {
+      console.error('Error saving freeze settings:', error);
+    }
   };
   const addReason = () => {
     if (reasonInput && !reasons.includes(reasonInput)) {
@@ -219,15 +368,15 @@ const AdminPanel = ({
   const removeReason = (r) => setReasons(reasons.filter(x => x !== r));
 
   // --- Модалка подтверждения удаления ---
-  const [confirm, setConfirm] = React.useState({ open: false, type: null, value: null });
-  const askRemovePeriod = (label) => setConfirm({ open: true, type: "period", value: label });
-  const askRemoveGroup = (value) => setConfirm({ open: true, type: "group", value });
-  const askRemovePayment = (value) => setConfirm({ open: true, type: "payment", value });
+  const [confirm, setConfirm] = React.useState({ open: false, type: null, value: null, id: null });
+  const askRemovePeriod = (id, label) => setConfirm({ open: true, type: "period", value: label, id });
+  const askRemoveGroup = (id, name) => setConfirm({ open: true, type: "group", value: name, id });
+  const askRemovePayment = (id, label) => setConfirm({ open: true, type: "payment", value: label, id });
   const handleConfirmDelete = () => {
-    if (confirm.type === "period") setPeriods(periods.filter((x) => x.label !== confirm.value));
-    if (confirm.type === "group") setGroups(groups.filter((x) => x.value !== confirm.value));
-    if (confirm.type === "payment") setPayments(payments.filter((x) => x.value !== confirm.value));
-    setConfirm({ open: false, type: null, value: null });
+    if (confirm.type === "period") deletePeriod(confirm.id);
+    if (confirm.type === "group") deleteGroup(confirm.id);
+    if (confirm.type === "payment") deletePayment(confirm.id);
+    setConfirm({ open: false, type: null, value: null, id: null });
   };
 
   // --- Экспорт/импорт справочников ---
@@ -335,8 +484,8 @@ const AdminPanel = ({
           </div>
           <ul className="flex flex-col gap-4">
             {periods.map((p) => (
-              <li key={p.value} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex items-center gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
-                {editPeriod && editPeriod.value === p.value ? (
+              <li key={p.id} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex items-center gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
+                {editPeriod && editPeriod.id === p.id ? (
                   <>
                     <input value={editPeriod.label} onChange={e => setEditPeriod(ep => ({ ...ep, label: e.target.value }))} className="w-28 border rounded px-2 py-1 text-sm" />
                     <input value={editPeriod.months} type="number" min={1} onChange={e => setEditPeriod(ep => ({ ...ep, months: e.target.value }))} className="w-12 border rounded px-2 py-1 text-sm" />
@@ -358,7 +507,7 @@ const AdminPanel = ({
                       </svg>
                     </button>
                     <button
-                      onClick={() => askRemovePeriod(p.label)}
+                      onClick={() => askRemovePeriod(p.id, p.label)}
                       className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition"
                       title="Удалить"
                     >
@@ -423,8 +572,8 @@ const AdminPanel = ({
           </div>
           <ul className="flex flex-col gap-4 mt-6">
             {groups.map((g) => (
-              <li key={g.value} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
-                {editGroup && editGroup.value === g.value ? (
+              <li key={g.id} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
+                {editGroup && editGroup.id === g.id ? (
                   <>
                     <input value={editGroup.name} onChange={e => setEditGroup(eg => ({ ...eg, name: e.target.value }))} className="w-full md:w-28 border rounded px-2 py-1 text-sm" />
                     <div className="flex flex-wrap gap-2 items-center">
@@ -473,7 +622,7 @@ const AdminPanel = ({
                       </svg>
                     </button>
                     <button
-                      onClick={() => askRemoveGroup(g.value)}
+                      onClick={() => askRemoveGroup(g.id, g.name)}
                       className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition"
                       title="Удалить"
                     >
@@ -530,8 +679,8 @@ const AdminPanel = ({
           </div>
           <ul className="flex flex-col gap-4">
             {payments.map((m) => (
-              <li key={m.value} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex items-center gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
-                {editPayment && editPayment.value === m.value ? (
+              <li key={m.id} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex items-center gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
+                {editPayment && editPayment.id === m.id ? (
                   <>
                     <input value={editPayment.label} onChange={e => setEditPayment(ep => ({ ...ep, label: e.target.value }))} className="w-28 border rounded px-2 py-1 text-sm" />
                     <select value={editPayment.type} onChange={e => setEditPayment(ep => ({ ...ep, type: e.target.value, value: e.target.value, banks: e.target.value === 'transfer' ? ep.banks : [] }))} className="w-24 border rounded px-2 py-1 text-sm">
@@ -568,7 +717,7 @@ const AdminPanel = ({
                         <path d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
                       </svg>
                     </button>
-                    <button onClick={() => askRemovePayment(m.value)} className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition" title="Удалить">
+                    <button onClick={() => askRemovePayment(m.id, m.label)} className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition" title="Удалить">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path d="M6 18L18 6M6 6l12 12" />
                       </svg>
