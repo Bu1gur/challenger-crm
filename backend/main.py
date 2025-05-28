@@ -429,6 +429,8 @@ async def debug_info():
         return {"error": str(e)}
 
 if os.path.exists(static_dir):
+    # Mount static files at root to serve assets directly
+    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
     
     @app.get("/")
@@ -439,7 +441,12 @@ if os.path.exists(static_dir):
     
     @app.get("/{full_path:path}")
     async def serve_spa_routes(full_path: str):
-        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi"):
+        # Exclude API routes, docs, and static assets
+        if (full_path.startswith("api/") or 
+            full_path.startswith("docs") or 
+            full_path.startswith("openapi") or
+            full_path.startswith("static/") or
+            full_path.startswith("assets/")):
             raise HTTPException(status_code=404, detail="Not found")
         index_path = os.path.join(static_dir, "index.html")
         return FileResponse(index_path)
