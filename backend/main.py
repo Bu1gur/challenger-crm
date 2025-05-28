@@ -409,15 +409,29 @@ def delete_freeze_settings(settings_id: int, db: Session = Depends(get_db)):
     return {"ok": True}
 
 # Static files for production deployment
-if os.path.exists("backend/static"):
-    app.mount("/static", StaticFiles(directory="backend/static"), name="static")
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+print(f"Checking for static directory: {static_dir}")
+print(f"Directory exists: {os.path.exists(static_dir)}")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
     
     @app.get("/")
     async def serve_spa():
-        return FileResponse('backend/static/index.html')
+        index_path = os.path.join(static_dir, "index.html")
+        print(f"Serving index.html from: {index_path}")
+        return FileResponse(index_path)
     
     @app.get("/{full_path:path}")
     async def serve_spa_routes(full_path: str):
         if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi"):
             raise HTTPException(status_code=404, detail="Not found")
-        return FileResponse('backend/static/index.html')
+        index_path = os.path.join(static_dir, "index.html")
+        return FileResponse(index_path)
+else:
+    print(f"Static directory not found at {static_dir}")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Directory contents: {os.listdir('.')}")
+    
+    @app.get("/")
+    async def serve_debug():
+        return {"message": "Static files not found", "cwd": os.getcwd(), "static_dir": static_dir}
