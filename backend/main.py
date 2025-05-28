@@ -412,6 +412,22 @@ def delete_freeze_settings(settings_id: int, db: Session = Depends(get_db)):
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 print(f"Checking for static directory: {static_dir}")
 print(f"Directory exists: {os.path.exists(static_dir)}")
+
+# Debug endpoint to check file structure
+@app.get("/api/debug")
+async def debug_info():
+    try:
+        return {
+            "cwd": os.getcwd(),
+            "static_dir": static_dir,
+            "static_exists": os.path.exists(static_dir),
+            "root_files": os.listdir('.') if os.path.exists('.') else [],
+            "backend_files": os.listdir('backend') if os.path.exists('backend') else [],
+            "static_files": os.listdir(static_dir) if os.path.exists(static_dir) else []
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
     
