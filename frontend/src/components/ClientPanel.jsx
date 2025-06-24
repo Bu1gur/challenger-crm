@@ -75,6 +75,8 @@ const ClientPanel = ({
 				discount_reason: client.discountReason || "",
 				trainer: client.trainer || ""
 			};
+			// Убираем лишние поля, которые не поддерживаются API
+			// visits, freeze, freezeHistory обрабатываются отдельно или не нужны для API
 			
 			// Если редактируем, добавляем ID
 			if (client.id) {
@@ -86,6 +88,7 @@ const ClientPanel = ({
 			console.log("client.contractNumber:", client.contractNumber, "-> contract_number:", apiClient.contract_number);
 			console.log("client.birthDate:", client.birthDate, "-> birth_date:", apiClient.birth_date);
 			console.log("client.startDate:", client.startDate, "-> start_date:", apiClient.start_date);
+			console.log("[CRM] Исключенные поля: visits, freeze, freezeHistory");
 			
 			let response;
 			if (client.id) {
