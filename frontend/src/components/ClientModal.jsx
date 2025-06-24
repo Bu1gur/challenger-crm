@@ -320,11 +320,10 @@ const ClientModal = ({
         }
       }
       
+      // Передаем только базовые поля формы, без visits, freeze, freezeHistory
+      // Эти поля используются только в UI и не должны отправляться на API
       const clientData = { 
-        ...form, 
-        visits, 
-        freeze: freezeData, 
-        freezeHistory, 
+        ...form,
         trainer: form.trainer || "" 
       };
       
