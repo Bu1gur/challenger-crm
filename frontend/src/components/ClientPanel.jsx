@@ -46,86 +46,47 @@ const ClientPanel = ({
 		fetchClients();
 	}, []);
 
-	// Добавление/редактирование клиента
-	const handleSave = async (client) => {
-		console.log("[CRM] handleSave вызван с клиентом:", client);
+	// Добавление/редактирование клиента - УПРОЩЕННАЯ ЛОГИКА
+	const handleSave = async (clientData) => {
+		console.log("[CRM] handleSave получил данные:", clientData);
 		setLoading(true);
 		setError(null);
 		
 		try {
-			// Преобразуем camelCase в snake_case для API и убираем лишние поля
-			const apiClient = {
-				contract_number: client.contractNumber || "",
-				name: client.name || "",
-				surname: client.surname || "",
-				phone: client.phone || "",
-				address: client.address || "",
-				birth_date: client.birthDate || "",
-				start_date: client.startDate || "",
-				end_date: client.endDate || "",
-				subscription_period: client.subscriptionPeriod || "",
-				payment_amount: client.paymentAmount || "",
-				payment_method: client.paymentMethod || "",
-				group: client.group || "",
-				comment: client.comment || "",
-				status: client.status || "Активен",
-				paid: client.paid || false,
-				total_sessions: client.totalSessions || 0,
-				has_discount: client.hasDiscount || false,
-				discount_reason: client.discountReason || "",
-				trainer: client.trainer || ""
-			};
-			// Убираем лишние поля, которые не поддерживаются API
-			// visits, freeze, freezeHistory обрабатываются отдельно или не нужны для API
-			
-			// Если редактируем, добавляем ID
-			if (client.id) {
-				apiClient.id = client.id;
-			}
-			
-			console.log("[CRM] Отправляем на API:", apiClient);
-			console.log("[CRM] Сравнение полей:");
-			console.log("client.contractNumber:", client.contractNumber, "-> contract_number:", apiClient.contract_number);
-			console.log("client.birthDate:", client.birthDate, "-> birth_date:", apiClient.birth_date);
-			console.log("client.startDate:", client.startDate, "-> start_date:", apiClient.start_date);
-			console.log("[CRM] Исключенные поля: visits, freeze, freezeHistory");
+			console.log("[CRM] Отправляем на API как есть:", clientData);
 			
 			let response;
-			if (client.id) {
+			if (clientData.id) {
 				// Редактирование существующего клиента
-				response = await fetch(`${API_ENDPOINTS.CLIENTS}/${client.id}`, {
+				response = await fetch(`${API_ENDPOINTS.CLIENTS}/${clientData.id}`, {
 					method: "PUT",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(apiClient),
+					body: JSON.stringify(clientData),
 				});
-				
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-				}
-				
-				const updated = await response.json();
-				console.log("[CRM] Клиент обновлен:", updated);
-				setClients((prev) =>
-					prev.map((c) => (c.id === updated.id ? updated : c))
-				);
-				setModal({ open: false, editId: null, forceEdit: false });
 			} else {
 				// Добавление нового клиента
-				console.log("[CRM] Добавляем нового клиента:", apiClient);
 				response = await fetch(API_ENDPOINTS.CLIENTS, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(apiClient),
+					body: JSON.stringify(clientData),
 				});
-				
-				console.log("[CRM] Ответ сервера на POST:", response.status, response.statusText);
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-				}
-				
-				const newClient = await response.json();
-				console.log("[CRM] Новый клиент создан:", newClient);
-				setClients((prev) => [...prev, newClient]);
+			}
+			
+			console.log("[CRM] Ответ сервера:", response.status, response.statusText);
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error("[CRM] Ошибка сервера:", errorText);
+				throw new Error(`HTTP ${response.status}: ${errorText}`);
+			}
+			
+			const result = await response.json();
+			console.log("[CRM] Результат:", result);
+			
+			if (clientData.id) {
+				setClients((prev) => prev.map((c) => (c.id === result.id ? result : c)));
+				setModal({ open: false, editId: null, forceEdit: false });
+			} else {
+				setClients((prev) => [...prev, result]);
 				setModal({ open: false, editId: null });
 			}
 		} catch (error) {

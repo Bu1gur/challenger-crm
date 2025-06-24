@@ -320,14 +320,36 @@ const ClientModal = ({
         }
       }
       
-      // Передаем только базовые поля формы, без visits, freeze, freezeHistory
-      // Эти поля используются только в UI и не должны отправляться на API
-      const clientData = { 
-        ...form,
-        trainer: form.trainer || "" 
+      // КАРДИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Отправляем только ТОЧНО те поля, которые API понимает
+      const clientData = {
+        // Основные поля клиента
+        contract_number: form.contractNumber || "",
+        name: form.name || "",
+        surname: form.surname || "",
+        phone: form.phone || "",
+        address: form.address || "",
+        birth_date: form.birthDate || "",
+        start_date: form.startDate || "",
+        end_date: form.endDate || "",
+        subscription_period: form.subscriptionPeriod || "1m",
+        payment_amount: form.paymentAmount || "",
+        payment_method: form.paymentMethod || "",
+        group: form.group || "",
+        comment: form.comment || "",
+        status: form.status || "Активен",
+        paid: form.paid || false,
+        total_sessions: form.totalSessions || 0,
+        has_discount: form.hasDiscount || false,
+        discount_reason: form.discountReason || "",
+        trainer: form.trainer || ""
       };
       
-      console.log('[CRM] onSave (ClientModal):', clientData);
+      // Если редактируем, добавляем ID
+      if (form.id) {
+        clientData.id = form.id;
+      }
+      
+      console.log('[CRM] Отправляем ТОЛЬКО совместимые поля:', clientData);
       await onSave(clientData);
       
     } catch (error) {
