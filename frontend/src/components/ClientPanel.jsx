@@ -52,21 +52,35 @@ const ClientPanel = ({
 		setLoading(true);
 		setError(null);
 		
-		// Преобразуем camelCase в snake_case для API
+		// Преобразуем camelCase в snake_case для API и убираем лишние поля
 		const apiClient = {
-			...client,
-			contract_number: client.contractNumber,
-			birth_date: client.birthDate,
-			start_date: client.startDate,
-			end_date: client.endDate,
-			subscription_period: client.subscriptionPeriod,
-			payment_amount: client.paymentAmount,
-			payment_method: client.paymentMethod,
-			total_sessions: client.totalSessions,
-			has_discount: client.hasDiscount,
-			discount_reason: client.discountReason,
-			freeze_history: client.freezeHistory
+			contract_number: client.contractNumber || "",
+			name: client.name || "",
+			surname: client.surname || "",
+			phone: client.phone || "",
+			address: client.address || "",
+			birth_date: client.birthDate || "",
+			start_date: client.startDate || "",
+			end_date: client.endDate || "",
+			subscription_period: client.subscriptionPeriod || "",
+			payment_amount: client.paymentAmount || "",
+			payment_method: client.paymentMethod || "",
+			group: client.group || "",
+			comment: client.comment || "",
+			status: client.status || "Активен",
+			paid: client.paid || false,
+			total_sessions: client.totalSessions || 0,
+			has_discount: client.hasDiscount || false,
+			discount_reason: client.discountReason || "",
+			trainer: client.trainer || ""
 		};
+		
+		// Если редактируем, добавляем ID
+		if (client.id) {
+			apiClient.id = client.id;
+		}
+		
+		console.log("[CRM] Отправляем на API:", apiClient);
 		
 		if (client.id) {
 			// Редактирование существующего клиента
