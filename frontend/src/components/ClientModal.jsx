@@ -144,6 +144,7 @@ const ClientModal = ({
     }
   }, [client]);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [freeze, setFreeze] = useState(
     client && client.freeze
       ? { ...client.freeze, isFrozen: client.status === "Заморожен" }
@@ -279,47 +280,63 @@ const ClientModal = ({
     return null;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('[CRM] FORM SUBMIT', form);
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    e.stopPropagation();
+    
+    // Предотвращаем множественные отправки
+    if (isSubmitting) {
+      console.log('[CRM] Already submitting, ignoring duplicate submit');
       return;
     }
-    setError("");
+
+    setIsSubmitting(true);
+    console.log('[CRM] FORM SUBMIT START', form);
     
-    let freezeData = null;
-    let freezeHistory = form.freezeHistory ? [...form.freezeHistory] : [];
-    
-    // Если статус "Заморожен" и есть даты — добавляем в историю, если это новая заморозка
-    if (form.status === "Заморожен" && (freeze.freezeStart || freeze.freezeEnd)) {
-      freezeData = {
-        start: freeze.freezeStart,
-        end: freeze.freezeEnd,
-        comment: freeze.freezeComment,
-        reason: freeze.freezeReason,
-        confirm: freeze.freezeConfirm,
-      };
-      // Добавляем только если это новая заморозка или изменились даты/причина
-      const last = freezeHistory[freezeHistory.length - 1];
-      if (!last || last.start !== freeze.freezeStart || last.end !== freeze.freezeEnd || last.reason !== freeze.freezeReason) {
-        freezeHistory.push(freezeData);
+    try {
+      const validationError = validateForm();
+      if (validationError) {
+        setError(validationError);
+        return;
       }
+      setError("");
+      
+      let freezeData = null;
+      let freezeHistory = form.freezeHistory ? [...form.freezeHistory] : [];
+      
+      // Если статус "Заморожен" и есть даты — добавляем в историю, если это новая заморозка
+      if (form.status === "Заморожен" && (freeze.freezeStart || freeze.freezeEnd)) {
+        freezeData = {
+          start: freeze.freezeStart,
+          end: freeze.freezeEnd,
+          comment: freeze.freezeComment,
+          reason: freeze.freezeReason,
+          confirm: freeze.freezeConfirm,
+        };
+        // Добавляем только если это новая заморозка или изменились даты/причина
+        const last = freezeHistory[freezeHistory.length - 1];
+        if (!last || last.start !== freeze.freezeStart || last.end !== freeze.freezeEnd || last.reason !== freeze.freezeReason) {
+          freezeHistory.push(freezeData);
+        }
+      }
+      
+      const clientData = { 
+        ...form, 
+        visits, 
+        freeze: freezeData, 
+        freezeHistory, 
+        trainer: form.trainer || "" 
+      };
+      
+      console.log('[CRM] onSave (ClientModal):', clientData);
+      await onSave(clientData);
+      
+    } catch (error) {
+      console.error('[CRM] Submit error:', error);
+      setError('Ошибка при сохранении данных');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    const clientData = { 
-      ...form, 
-      visits, 
-      freeze: freezeData, 
-      freezeHistory, 
-      trainer: form.trainer || "" 
-    };
-    
-    console.log('[CRM] onSave (ClientModal):', clientData);
-    onSave(clientData);
-    
-    // НЕ сбрасываем форму здесь - пусть родительский компонент закроет модал
   };
 
   const handlePhoneFocus = (e) => {
@@ -500,7 +517,17 @@ const ClientModal = ({
               </div>
             )}
             <div className="md:col-span-2 flex justify-end gap-3 mt-6">
-              <button type="submit" className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow font-semibold transition-all duration-200">OK</button>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className={`px-6 py-2 rounded-lg shadow font-semibold transition-all duration-200 ${
+                  isSubmitting 
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                {isSubmitting ? 'Сохранение...' : 'OK'}
+              </button>
               <button type="button" onClick={onClose} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow font-semibold transition-all duration-200">Cancel</button>
             </div>
             <div className="md:col-span-2 text-xs text-gray-400 mt-2">* — обязательные поля</div>
@@ -731,7 +758,17 @@ const ClientModal = ({
             </div>
           )}
           <div className="md:col-span-2 flex justify-end gap-3 mt-6">
-            <button type="submit" className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow font-semibold transition-all duration-200">OK</button>
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className={`px-6 py-2 rounded-lg shadow font-semibold transition-all duration-200 ${
+                isSubmitting 
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
+            >
+              {isSubmitting ? 'Сохранение...' : 'OK'}
+            </button>
             <button type="button" onClick={onClose} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow font-semibold transition-all duration-200">Cancel</button>
           </div>
           <div className="md:col-span-2 text-xs text-gray-400 mt-2">* — обязательные поля</div>

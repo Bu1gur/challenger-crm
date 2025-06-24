@@ -47,87 +47,86 @@ const ClientPanel = ({
 	}, []);
 
 	// Добавление/редактирование клиента
-	const handleSave = (client) => {
+	const handleSave = async (client) => {
 		console.log("[CRM] handleSave вызван с клиентом:", client);
 		setLoading(true);
 		setError(null);
 		
-		// Преобразуем camelCase в snake_case для API и убираем лишние поля
-		const apiClient = {
-			contract_number: client.contractNumber || "",
-			name: client.name || "",
-			surname: client.surname || "",
-			phone: client.phone || "",
-			address: client.address || "",
-			birth_date: client.birthDate || "",
-			start_date: client.startDate || "",
-			end_date: client.endDate || "",
-			subscription_period: client.subscriptionPeriod || "",
-			payment_amount: client.paymentAmount || "",
-			payment_method: client.paymentMethod || "",
-			group: client.group || "",
-			comment: client.comment || "",
-			status: client.status || "Активен",
-			paid: client.paid || false,
-			total_sessions: client.totalSessions || 0,
-			has_discount: client.hasDiscount || false,
-			discount_reason: client.discountReason || "",
-			trainer: client.trainer || ""
-		};
-		
-		// Если редактируем, добавляем ID
-		if (client.id) {
-			apiClient.id = client.id;
-		}
-		
-		console.log("[CRM] Отправляем на API:", apiClient);
-		
-		if (client.id) {
-			// Редактирование существующего клиента
-			fetch(`${API_ENDPOINTS.CLIENTS}/${client.id}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(apiClient),
-			})
-				.then((res) => {
-					if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-					return res.json();
-				})
-				.then((updated) => {
-					console.log("[CRM] Клиент обновлен:", updated);
-					setClients((prev) =>
-						prev.map((c) => (c.id === updated.id ? updated : c))
-					);
-					setModal({ open: false, editId: null, forceEdit: false });
-				})
-				.catch((e) => {
-					setError(e.message);
-					console.error("Ошибка обновления клиента:", e);
-				})
-				.finally(() => setLoading(false));
-		} else {
-			// Добавление нового клиента
-			console.log("[CRM] Добавляем нового клиента:", apiClient);
-			fetch(API_ENDPOINTS.CLIENTS, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(apiClient),
-			})
-				.then((res) => {
-					console.log("[CRM] Ответ сервера на POST:", res.status, res.statusText);
-					if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-					return res.json();
-				})
-				.then((newClient) => {
-					console.log("[CRM] Новый клиент создан:", newClient);
-					setClients((prev) => [...prev, newClient]);
-					setModal({ open: false, editId: null });
-				})
-				.catch((e) => {
-					console.error("[CRM] Ошибка добавления клиента:", e);
-					setError(e.message);
-				})
-				.finally(() => setLoading(false));
+		try {
+			// Преобразуем camelCase в snake_case для API и убираем лишние поля
+			const apiClient = {
+				contract_number: client.contractNumber || "",
+				name: client.name || "",
+				surname: client.surname || "",
+				phone: client.phone || "",
+				address: client.address || "",
+				birth_date: client.birthDate || "",
+				start_date: client.startDate || "",
+				end_date: client.endDate || "",
+				subscription_period: client.subscriptionPeriod || "",
+				payment_amount: client.paymentAmount || "",
+				payment_method: client.paymentMethod || "",
+				group: client.group || "",
+				comment: client.comment || "",
+				status: client.status || "Активен",
+				paid: client.paid || false,
+				total_sessions: client.totalSessions || 0,
+				has_discount: client.hasDiscount || false,
+				discount_reason: client.discountReason || "",
+				trainer: client.trainer || ""
+			};
+			
+			// Если редактируем, добавляем ID
+			if (client.id) {
+				apiClient.id = client.id;
+			}
+			
+			console.log("[CRM] Отправляем на API:", apiClient);
+			
+			let response;
+			if (client.id) {
+				// Редактирование существующего клиента
+				response = await fetch(`${API_ENDPOINTS.CLIENTS}/${client.id}`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(apiClient),
+				});
+				
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+				
+				const updated = await response.json();
+				console.log("[CRM] Клиент обновлен:", updated);
+				setClients((prev) =>
+					prev.map((c) => (c.id === updated.id ? updated : c))
+				);
+				setModal({ open: false, editId: null, forceEdit: false });
+			} else {
+				// Добавление нового клиента
+				console.log("[CRM] Добавляем нового клиента:", apiClient);
+				response = await fetch(API_ENDPOINTS.CLIENTS, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(apiClient),
+				});
+				
+				console.log("[CRM] Ответ сервера на POST:", response.status, response.statusText);
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+				
+				const newClient = await response.json();
+				console.log("[CRM] Новый клиент создан:", newClient);
+				setClients((prev) => [...prev, newClient]);
+				setModal({ open: false, editId: null });
+			}
+		} catch (error) {
+			console.error("[CRM] Ошибка сохранения клиента:", error);
+			setError(error.message);
+			throw error; // Пробрасываем ошибку для ClientModal
+		} finally {
+			setLoading(false);
 		}
 	};
 
