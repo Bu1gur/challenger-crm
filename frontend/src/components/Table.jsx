@@ -45,10 +45,7 @@ const Table = ({ clients, onView, onEdit, onDelete, periods, groups, onExtend })
             const debt = standardSum > 0 ? standardSum - paid : 0;
             return (
               <tr key={c.id} className={`border-b last:border-b-0 hover:bg-blue-50/40 transition ${c.status === "Заморожен" ? "bg-blue-50/60" : ""}`}
-                onClick={() => {
-                  console.log('[CRM] Table onClick для клиента:', c.id, c);
-                  onView && onView(c.id);
-                }}
+                onClick={() => onView && onView(c.id)}
                 style={{ cursor: 'pointer' }}
               >
                 <td className="p-3 font-medium text-gray-900 whitespace-nowrap">{c.surname} {c.name}</td>

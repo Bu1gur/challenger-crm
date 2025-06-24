@@ -93,17 +93,56 @@ const ClientModal = ({
   onDelete, // функция удаления
   freezeSettings = {} // настройки заморозки (дефолт)
 }) => {
-  console.log('[CRM] ClientModal props:', { client, editMode, extendMode });
-  
   // Безопасно получаем reasons
   const reasons = Array.isArray(freezeSettings.reasons) ? freezeSettings.reasons : [];
 
   const [form, setForm] = useState(() => {
-    if (client) return client;
+    if (client) {
+      // Преобразуем snake_case в camelCase
+      return {
+        ...client,
+        contractNumber: client.contract_number || client.contractNumber || "",
+        birthDate: client.birth_date || client.birthDate || "",
+        startDate: client.start_date || client.startDate || "",
+        endDate: client.end_date || client.endDate || "",
+        subscriptionPeriod: client.subscription_period || client.subscriptionPeriod || "1m",
+        paymentAmount: client.payment_amount || client.paymentAmount || "",
+        paymentMethod: client.payment_method || client.paymentMethod || "",
+        totalSessions: client.total_sessions || client.totalSessions || 0,
+        hasDiscount: client.has_discount || client.hasDiscount || false,
+        discountReason: client.discount_reason || client.discountReason || "",
+        freezeHistory: client.freeze_history || client.freezeHistory || []
+      };
+    }
     // Новая запись: дата начала по умолчанию сегодня
     const today = new Date().toISOString().slice(0, 10);
     return { ...empty, startDate: today };
   });
+
+  // Обновляем форму когда клиент изменяется
+  useEffect(() => {
+    if (client) {
+      setForm({
+        ...client,
+        contractNumber: client.contract_number || client.contractNumber || "",
+        birthDate: client.birth_date || client.birthDate || "",
+        startDate: client.start_date || client.startDate || "",
+        endDate: client.end_date || client.endDate || "",
+        subscriptionPeriod: client.subscription_period || client.subscriptionPeriod || "1m",
+        paymentAmount: client.payment_amount || client.paymentAmount || "",
+        paymentMethod: client.payment_method || client.paymentMethod || "",
+        totalSessions: client.total_sessions || client.totalSessions || 0,
+        hasDiscount: client.has_discount || client.hasDiscount || false,
+        discountReason: client.discount_reason || client.discountReason || "",
+        freezeHistory: client.freeze_history || client.freezeHistory || []
+      });
+      setVisits(client.visits || []);
+    } else {
+      const today = new Date().toISOString().slice(0, 10);
+      setForm({ ...empty, startDate: today });
+      setVisits([]);
+    }
+  }, [client]);
   const [error, setError] = useState("");
   const [freeze, setFreeze] = useState(
     client && client.freeze
@@ -249,8 +288,10 @@ const ClientModal = ({
       return;
     }
     setError("");
+    
     let freezeData = null;
     let freezeHistory = form.freezeHistory ? [...form.freezeHistory] : [];
+    
     // Если статус "Заморожен" и есть даты — добавляем в историю, если это новая заморозка
     if (form.status === "Заморожен" && (freeze.freezeStart || freeze.freezeEnd)) {
       freezeData = {
@@ -266,11 +307,19 @@ const ClientModal = ({
         freezeHistory.push(freezeData);
       }
     }
-    console.log('[CRM] onSave (ClientModal):', { ...form, visits, freeze: freezeData, freezeHistory, trainer: form.trainer || "" });
-    onSave({ ...form, visits, freeze: freezeData, freezeHistory, trainer: form.trainer || "" });
-    setForm({ ...empty, startDate: new Date().toISOString().slice(0, 10) });
-    setVisits([]);
-    onClose();
+    
+    const clientData = { 
+      ...form, 
+      visits, 
+      freeze: freezeData, 
+      freezeHistory, 
+      trainer: form.trainer || "" 
+    };
+    
+    console.log('[CRM] onSave (ClientModal):', clientData);
+    onSave(clientData);
+    
+    // НЕ сбрасываем форму здесь - пусть родительский компонент закроет модал
   };
 
   const handlePhoneFocus = (e) => {

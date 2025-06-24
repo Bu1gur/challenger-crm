@@ -33,10 +33,7 @@ const ClientPanel = ({
 				if (!res.ok) throw new Error(res.statusText);
 				return res.json();
 			})
-			.then((data) => {
-				console.log('[CRM] Загруженные клиенты с сервера:', data);
-				setClients(data);
-			})
+			.then(setClients)
 			.catch((e) => {
 				setClients([]);
 				setError(e.message);
@@ -54,39 +51,63 @@ const ClientPanel = ({
 		console.log("[CRM] handleSave вызван с клиентом:", client);
 		setLoading(true);
 		setError(null);
+		
+		// Преобразуем camelCase в snake_case для API
+		const apiClient = {
+			...client,
+			contract_number: client.contractNumber,
+			birth_date: client.birthDate,
+			start_date: client.startDate,
+			end_date: client.endDate,
+			subscription_period: client.subscriptionPeriod,
+			payment_amount: client.paymentAmount,
+			payment_method: client.paymentMethod,
+			total_sessions: client.totalSessions,
+			has_discount: client.hasDiscount,
+			discount_reason: client.discountReason,
+			freeze_history: client.freezeHistory
+		};
+		
 		if (client.id) {
+			// Редактирование существующего клиента
 			fetch(`${API_ENDPOINTS.CLIENTS}/${client.id}`, {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(client),
+				body: JSON.stringify(apiClient),
 			})
-				.then((res) => res.json())
-				.then((updated) =>
+				.then((res) => {
+					if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+					return res.json();
+				})
+				.then((updated) => {
+					console.log("[CRM] Клиент обновлен:", updated);
 					setClients((prev) =>
 						prev.map((c) => (c.id === updated.id ? updated : c))
-					)
-				)
+					);
+					setModal({ open: false, editId: null, forceEdit: false });
+				})
 				.catch((e) => {
 					setError(e.message);
 					console.error("Ошибка обновления клиента:", e);
 				})
 				.finally(() => setLoading(false));
 		} else {
-			console.log("[CRM] Добавляем нового клиента:", client);
+			// Добавление нового клиента
+			console.log("[CRM] Добавляем нового клиента:", apiClient);
 			fetch(API_ENDPOINTS.CLIENTS, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(client),
+				body: JSON.stringify(apiClient),
 			})
 				.then((res) => {
 					console.log("[CRM] Ответ сервера на POST:", res.status, res.statusText);
-					if (!res.ok) throw new Error(res.statusText);
+					if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 					return res.json();
 				})
 				.then((newClient) => {
 					console.log("[CRM] Новый клиент создан:", newClient);
 					setClients((prev) => [...prev, newClient]);
-					fetchClients(); // чтобы синхронизировать с сервером (на всякий случай)
+					setModal({ open: false, editId: null });
 				})
 				.catch((e) => {
 					console.error("[CRM] Ошибка добавления клиента:", e);
@@ -94,7 +115,6 @@ const ClientPanel = ({
 				})
 				.finally(() => setLoading(false));
 		}
-		setModal({ open: false, editId: null });
 	};
 
 	// Мягкое удаление клиента (оставляет в базе)
@@ -126,15 +146,10 @@ const ClientPanel = ({
 	// Экспорт/импорт и прочее оставляю как есть (работают только с текущим clients)
 
 	const handleAdd = () => setModal({ open: true, editId: null });
-	const handleView = (id) => {
-		console.log('[CRM] handleView вызван с ID:', id);
-		console.log('[CRM] Доступные клиенты:', clients.map(c => ({ id: c.id, name: c.name, surname: c.surname })));
-		setModal({ open: true, editId: id });
-	}; // Просмотр карточки
+	const handleView = (id) => setModal({ open: true, editId: id }); // Просмотр карточки
 	const handleEdit = (id) => setModal({ open: true, editId: id, forceEdit: true }); // Прямое редактирование
 
 	const editingClient = clients.find((c) => c.id === modal.editId) || null;
-	console.log('[CRM] editingClient:', editingClient, 'modal.editId:', modal.editId, 'clients length:', clients.length);
 
 	// Экспорт клиентов в Excel
 	const handleExportRefs = () => {
