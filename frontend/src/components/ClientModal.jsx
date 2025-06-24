@@ -332,14 +332,14 @@ const ClientModal = ({
         start_date: form.startDate || "",
         end_date: form.endDate || "",
         subscription_period: form.subscriptionPeriod || "1m",
-        payment_amount: form.paymentAmount || "",
+        payment_amount: String(form.paymentAmount || ""), // ИСПРАВЛЕНИЕ: Приводим к строке
         payment_method: form.paymentMethod || "",
         group: form.group || "",
         comment: form.comment || "",
         status: form.status || "Активен",
-        paid: form.paid || false,
-        total_sessions: form.totalSessions || 0,
-        has_discount: form.hasDiscount || false,
+        paid: Boolean(form.paid), // Убеждаемся что это boolean
+        total_sessions: Number(form.totalSessions || 0), // Убеждаемся что это number
+        has_discount: Boolean(form.hasDiscount), // Убеждаемся что это boolean
         discount_reason: form.discountReason || "",
         trainer: form.trainer || ""
       };

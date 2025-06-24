@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.jsx'
 
 // Version info for debugging
-console.log('🚀 Challenger CRM v1.0.0 - PRODUCTION FIX - HTTP 422 SOLVED!');
+console.log('🚀 Challenger CRM v1.0.1 - PAYMENT AMOUNT FIX!');
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
