@@ -82,6 +82,10 @@ const ClientPanel = ({
 			}
 			
 			console.log("[CRM] Отправляем на API:", apiClient);
+			console.log("[CRM] Сравнение полей:");
+			console.log("client.contractNumber:", client.contractNumber, "-> contract_number:", apiClient.contract_number);
+			console.log("client.birthDate:", client.birthDate, "-> birth_date:", apiClient.birth_date);
+			console.log("client.startDate:", client.startDate, "-> start_date:", apiClient.start_date);
 			
 			let response;
 			if (client.id) {
