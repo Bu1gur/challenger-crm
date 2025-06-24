@@ -17,74 +17,45 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-6xl mx-auto py-8">
-        <div className="flex gap-8">
-          <Sidebar />
-          <div className="flex-1">
-            <div className="flex gap-4 mb-8">
-              <button
-                onClick={() => setSection("clients")}
-                className={
-                  section === "clients"
-                    ? "font-bold text-blue-700"
-                    : "text-gray-500"
-                }
-              >
-                Клиенты
-              </button>
-              <button
-                onClick={() => setSection("trainers")}
-                className={
-                  section === "trainers"
-                    ? "font-bold text-blue-700"
-                    : "text-gray-500"
-                }
-              >
-                Тренеры
-              </button>
-              <button
-                onClick={() => setSection("admin")}
-                className={
-                  section === "admin"
-                    ? "font-bold text-blue-700"
-                    : "text-gray-500"
-                }
-              >
-                Админка
-              </button>
+      <div className="max-w-7xl mx-auto py-6 px-4">
+        <div className="flex gap-6">
+          <Sidebar section={section} setSection={setSection} />
+          <div className="flex-1 min-w-0">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              {section === "clients" && (
+                <ClientPanel
+                  clients={clients}
+                  setClients={setClients}
+                  periods={periodsState}
+                  groups={groupsState}
+                  payments={paymentsState}
+                  freezeSettings={freezeSettingsState}
+                  setPeriods={setPeriods}
+                  setGroups={setGroups}
+                  setPayments={setPayments}
+                  setFreezeSettings={setFreezeSettings}
+                />
+              )}
+              {section === "trainers" && (
+                <TrainerPanel
+                  clients={clients}
+                  setClients={setClients}
+                  groups={groupsState}
+                />
+              )}
+              {section === "admin" && (
+                <AdminPanel
+                  periods={periodsState}
+                  setPeriods={setPeriods}
+                  groups={groupsState}
+                  setGroups={setGroups}
+                  payments={paymentsState}
+                  setPayments={setPayments}
+                  freezeSettings={freezeSettingsState}
+                  setFreezeSettings={setFreezeSettings}
+                />
+              )}
             </div>
-            {section === "clients" && (            <ClientPanel
-              clients={clients}
-              setClients={setClients}
-              periods={periodsState}
-              groups={groupsState}
-              payments={paymentsState}
-              freezeSettings={freezeSettingsState}
-              setPeriods={setPeriods}
-              setGroups={setGroups}
-              setPayments={setPayments}
-              setFreezeSettings={setFreezeSettings}
-            />
-            )}
-            {section === "trainers" && (
-              <TrainerPanel
-                clients={clients}
-                setClients={setClients}
-                groups={groups}
-              />
-            )}
-            {section === "admin" && (
-              <AdminPanel
-                periods={periods}
-                setPeriods={setPeriods}
-                groups={groups}
-                setGroups={setGroups}
-                payments={payments}
-                setPayments={setPayments}
-                freezeSettings={freezeSettings}
-                setFreezeSettings={setFreezeSettings}
-              />
-            )}
           </div>
         </div>
       </div>

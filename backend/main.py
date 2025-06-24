@@ -23,10 +23,10 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # CORS для фронта
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5174").split(",")
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5174,https://challenger-crm.onrender.com").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=["*"],  # Allow all origins for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -74,15 +74,24 @@ class ClientOut(ClientBase):
 # --- Клиенты ---
 @app.get("/clients", response_model=List[ClientOut])
 def get_clients(db: Session = Depends(get_db)):
-    return db.query(models.Client).all()
+    clients = db.query(models.Client).all()
+    print(f"Retrieved {len(clients)} clients")
+    return clients
 
 @app.post("/clients", response_model=ClientOut)
 def create_client(client: ClientCreate, db: Session = Depends(get_db)):
-    db_client = models.Client(**client.dict())
-    db.add(db_client)
-    db.commit()
-    db.refresh(db_client)
-    return db_client
+    print(f"Creating client: {client.dict()}")
+    try:
+        db_client = models.Client(**client.dict())
+        db.add(db_client)
+        db.commit()
+        db.refresh(db_client)
+        print(f"Client created successfully: {db_client.id}")
+        return db_client
+    except Exception as e:
+        print(f"Error creating client: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error creating client: {str(e)}")
 
 @app.put("/clients/{client_id}", response_model=ClientOut)
 def update_client(client_id: int, client: ClientUpdate, db: Session = Depends(get_db)):

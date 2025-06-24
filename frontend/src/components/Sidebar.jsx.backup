@@ -53,15 +53,15 @@ const navItems = [
 const Sidebar = ({ section, setSection }) => {
 	return (
 		<aside className="w-64 flex-shrink-0">
-			<div className="sticky top-8 bg-white rounded-lg shadow-lg border border-gray-100 p-4">
+			<div className="sticky top-8 bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
 				<nav className="flex flex-col gap-2">
 					{navItems.map((item) => (
 						<button
 							key={item.key}
 							onClick={() => setSection(item.key)}
-							className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-200
+							className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-200
                 ${section === item.key
-									? "bg-blue-500 text-white shadow-lg"
+									? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
 									: "text-gray-600 hover:bg-blue-50 hover:text-blue-700"}
               `}
 						>

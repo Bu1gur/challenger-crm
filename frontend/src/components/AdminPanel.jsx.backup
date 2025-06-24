@@ -14,25 +14,23 @@ const TABS = [
 function ConfirmModal({ open, text, onConfirm, onCancel }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
-        <div className="text-center">
-          <div className="text-3xl mb-2 text-red-500">⚠️</div>
-          <div className="text-lg font-semibold mb-4 text-gray-800">{text}</div>
-          <div className="flex gap-3 justify-center mt-4">
-            <button
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
-              onClick={onConfirm}
-            >
-              Да, удалить
-            </button>
-            <button
-              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium"
-              onClick={onCancel}
-            >
-              Отмена
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xs flex flex-col items-center border border-gray-100 animate-fade-in">
+        <div className="text-3xl mb-2 text-red-500">⚠️</div>
+        <div className="text-lg font-bold mb-4 text-gray-800 text-center">{text}</div>
+        <div className="flex gap-4 mt-2">
+          <button
+            className="px-6 py-2 bg-gradient-to-r from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white rounded-xl shadow font-semibold transition-all duration-200"
+            onClick={onConfirm}
+          >
+            Да, удалить
+          </button>
+          <button
+            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl shadow font-semibold transition-all duration-200"
+            onClick={onCancel}
+          >
+            Отмена
+          </button>
         </div>
       </div>
     </div>
@@ -423,12 +421,12 @@ const AdminPanel = ({
         </h2>
         <div className="flex gap-3">
           <button
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
             onClick={handleExportRefs}
           >
             Экспорт справочников
           </button>
-          <label className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm cursor-pointer">
+          <label className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer">
             Импорт справочников
             <input type="file" accept=".xlsx,.xls" onChange={handleImportRefs} className="hidden" />
           </label>
@@ -441,7 +439,7 @@ const AdminPanel = ({
           {TABS.map(t => (
             <button
               key={t.key}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 tab === t.key
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -453,7 +451,6 @@ const AdminPanel = ({
           ))}
         </nav>
       </div>
-
       {/* Справочник: Сроки абонемента */}
       {tab === "periods" && (
         <div className="space-y-6">
@@ -470,7 +467,7 @@ const AdminPanel = ({
                     setNewPeriod(p => ({ ...p, label: e.target.value })); 
                     setPeriodErrors(errors => ({ ...errors, label: undefined })); 
                   }} 
-                  className={`border rounded-lg px-3 py-2 w-40 ${periodErrors.label ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
+                  className={`border rounded-md px-3 py-2 w-40 ${periodErrors.label ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
                   placeholder="Название" 
                 />
                 {periodErrors.label && <span className="text-red-500 text-xs mt-1">{periodErrors.label}</span>}
@@ -483,7 +480,7 @@ const AdminPanel = ({
                     setNewPeriod(p => ({ ...p, months: e.target.value })); 
                     setPeriodErrors(errors => ({ ...errors, months: undefined })); 
                   }} 
-                  className={`border rounded-lg px-3 py-2 w-20 ${periodErrors.months ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
+                  className={`border rounded-md px-3 py-2 w-20 ${periodErrors.months ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
                   type="number" 
                   min={1} 
                 />
@@ -497,7 +494,7 @@ const AdminPanel = ({
                     setNewPeriod(p => ({ ...p, price: e.target.value })); 
                     setPeriodErrors(errors => ({ ...errors, price: undefined })); 
                   }} 
-                  className={`border rounded-lg px-3 py-2 w-28 ${periodErrors.price ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
+                  className={`border rounded-md px-3 py-2 w-28 ${periodErrors.price ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
                   type="number" 
                   min={0} 
                 />
@@ -511,7 +508,7 @@ const AdminPanel = ({
                     setNewPeriod(p => ({ ...p, trainings: e.target.value })); 
                     setPeriodErrors(errors => ({ ...errors, trainings: undefined })); 
                   }} 
-                  className={`border rounded-lg px-3 py-2 w-28 ${periodErrors.trainings ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
+                  className={`border rounded-md px-3 py-2 w-28 ${periodErrors.trainings ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
                   type="number" 
                   min={1} 
                 />
@@ -519,7 +516,7 @@ const AdminPanel = ({
               </div>
               <button
                 onClick={addPeriod}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
                 type="button"
               >
                 Добавить
@@ -536,29 +533,29 @@ const AdminPanel = ({
                     <input 
                       value={editPeriod.label} 
                       onChange={e => setEditPeriod(ep => ({ ...ep, label: e.target.value }))} 
-                      className="border rounded-lg px-3 py-2 w-32" 
+                      className="border rounded px-2 py-1 w-32" 
                     />
                     <input 
                       value={editPeriod.months} 
                       onChange={e => setEditPeriod(ep => ({ ...ep, months: e.target.value }))} 
-                      className="border rounded-lg px-3 py-2 w-16" 
+                      className="border rounded px-2 py-1 w-16" 
                       type="number" 
                     />
                     <input 
                       value={editPeriod.price} 
                       onChange={e => setEditPeriod(ep => ({ ...ep, price: e.target.value }))} 
-                      className="border rounded-lg px-3 py-2 w-20" 
+                      className="border rounded px-2 py-1 w-20" 
                       type="number" 
                     />
                     <input 
                       value={editPeriod.trainings} 
                       onChange={e => setEditPeriod(ep => ({ ...ep, trainings: e.target.value }))} 
-                      className="border rounded-lg px-3 py-2 w-20" 
+                      className="border rounded px-2 py-1 w-20" 
                       type="number" 
                     />
                     <div className="flex gap-2">
-                      <button onClick={saveEditPeriod} className="text-green-600 hover:text-green-700 p-1">✓</button>
-                      <button onClick={() => setEditPeriod(null)} className="text-gray-400 hover:text-gray-600 p-1">✕</button>
+                      <button onClick={saveEditPeriod} className="text-green-600 hover:text-green-700">✓</button>
+                      <button onClick={() => setEditPeriod(null)} className="text-gray-400 hover:text-gray-600">✕</button>
                     </div>
                   </div>
                 ) : (
@@ -590,82 +587,106 @@ const AdminPanel = ({
           </div>
         </div>
       )}
-
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+          </div>
+          <ul className="flex flex-col gap-4">
+            {periods.map((p) => (
+              <li key={p.id} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex items-center gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
+                {editPeriod && editPeriod.id === p.id ? (
+                  <>
+                    <input value={editPeriod.label} onChange={e => setEditPeriod(ep => ({ ...ep, label: e.target.value }))} className="w-28 border rounded px-2 py-1 text-sm" />
+                    <input value={editPeriod.months} type="number" min={1} onChange={e => setEditPeriod(ep => ({ ...ep, months: e.target.value }))} className="w-12 border rounded px-2 py-1 text-sm" />
+                    <input value={editPeriod.price} type="number" min={0} onChange={e => setEditPeriod(ep => ({ ...ep, price: e.target.value }))} className="w-20 border rounded px-2 py-1 text-sm" />
+                    <input value={editPeriod.trainings} type="number" min={1} onChange={e => setEditPeriod(ep => ({ ...ep, trainings: e.target.value }))} className="w-20 border rounded px-2 py-1 text-sm" />
+                    <button onClick={saveEditPeriod} className="text-green-600 font-bold text-xl">✔</button>
+                    <button onClick={() => setEditPeriod(null)} className="text-gray-400 font-bold text-xl">✖</button>
+                  </>
+                ) : (
+                  <>
+                    <span className="break-all flex-1">{p.label} — {p.months} мес, <b>{p.price} сом</b>, <b>{p.trainings || 0} трен.</b></span>
+                    <button
+                      onClick={() => startEditPeriod(p)}
+                      className="p-2 rounded-lg hover:bg-blue-100 text-blue-500 hover:text-blue-700 transition"
+                      title="Редактировать"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => askRemovePeriod(p.id, p.label)}
+                      className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition"
+                      title="Удалить"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* Справочник: Группы */}
       {tab === "groups" && (
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="mb-10 border-b pb-8">
+          <h3 className="font-bold mb-6 text-blue-700 text-2xl flex items-center gap-2">
+            <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" /><path d="M8 12h8M12 8v8" /></svg>
             Группы
           </h3>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4 flex-wrap items-end">
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Название</label>
-                  <input 
-                    value={newGroup.name} 
-                    onChange={e => { 
-                      setNewGroup(g => ({ ...g, name: e.target.value })); 
-                      setGroupErrors(errors => ({ ...errors, name: undefined })); 
-                    }} 
-                    className={`border rounded-lg px-3 py-2 w-40 ${groupErrors.name ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
-                    placeholder="Название" 
-                  />
-                  {groupErrors.name && <span className="text-red-500 text-xs mt-1">{groupErrors.name}</span>}
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Время начала</label>
-                  <input
-                    type="time"
-                    value={newGroup.timeStart}
-                    onChange={e => setNewGroup(g => ({ ...g, timeStart: e.target.value }))}
-                    className={`border rounded-lg px-3 py-2 w-28 ${groupErrors.time ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Время окончания</label>
-                  <input
-                    type="time"
-                    value={newGroup.timeEnd}
-                    onChange={e => setNewGroup(g => ({ ...g, timeEnd: e.target.value }))}
-                    className={`border rounded-lg px-3 py-2 w-28 ${groupErrors.time ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
-                  {groupErrors.time && <span className="text-red-500 text-xs mt-1">{groupErrors.time}</span>}
-                </div>
-                <button
-                  onClick={addGroup}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
-                  type="button"
-                >
-                  Добавить
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm font-medium text-gray-700">Дни недели:</span>
-                {weekDays.map(day => (
-                  <label key={day} className={`px-3 py-1 rounded-lg cursor-pointer text-sm font-medium ${newGroup.days.includes(day) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}> 
-                    <input type="checkbox" checked={newGroup.days.includes(day)} onChange={() => toggleDay(day, newGroup, setNewGroup)} className="hidden" />
-                    {day}
-                  </label>
-                ))}
-              </div>
+          <div className="flex flex-col md:flex-row md:items-end gap-6 bg-white/80 rounded-2xl p-6 shadow-xl border border-gray-100 mb-4">
+            <div className="flex flex-col gap-2 w-full md:w-auto">
+              <input value={newGroup.name} onChange={e => { setNewGroup(g => ({ ...g, name: e.target.value })); setGroupErrors(errors => ({ ...errors, name: undefined })); }} className={`border-2 rounded-xl px-3 py-2 w-full md:w-40 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base ${groupErrors.name ? "border-red-400" : "border-gray-200"}`} placeholder="Название" />
+              {groupErrors.name && <span className="text-red-500 text-xs">{groupErrors.name}</span>}
             </div>
+            <div className="flex flex-wrap gap-2 items-center">
+              {weekDays.map(day => (
+                <label key={day} className={`px-2 py-1 rounded-lg cursor-pointer text-xs font-semibold transition ${newGroup.days.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}> 
+                  <input type="checkbox" checked={newGroup.days.includes(day)} onChange={() => toggleDay(day, newGroup, setNewGroup)} className="hidden" />
+                  {day}
+                </label>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2 w-full md:w-auto">
+              <label className="text-xs text-gray-500 mb-1">Время начала</label>
+              <input
+                type="time"
+                value={newGroup.timeStart}
+                onChange={e => setNewGroup(g => ({ ...g, timeStart: e.target.value }))}
+                className={`border-2 rounded-xl px-3 py-2 w-full md:w-28 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base ${groupErrors.time ? "border-red-400" : "border-gray-200"}`}
+              />
+            </div>
+            <div className="flex flex-col gap-2 w-full md:w-auto">
+              <label className="text-xs text-gray-500 mb-1">Время окончания</label>
+              <input
+                type="time"
+                value={newGroup.timeEnd}
+                onChange={e => setNewGroup(g => ({ ...g, timeEnd: e.target.value }))}
+                className={`border-2 rounded-xl px-3 py-2 w-full md:w-28 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base ${groupErrors.time ? "border-red-400" : "border-gray-200"}`}
+              />
+              {groupErrors.time && <span className="text-red-500 text-xs">{groupErrors.time}</span>}
+            </div>
+            <button
+              onClick={addGroup}
+              className="ml-0 md:ml-1 flex items-center gap-1 px-4 py-3 rounded-2xl bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white font-bold text-base shadow-xl transition-all duration-200 active:scale-95"
+              style={{ minWidth: 44, minHeight: 44 }}
+              type="button"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
           </div>
-          
-          {/* Список групп */}
-          <div className="space-y-2">
+          <ul className="flex flex-col gap-4 mt-6">
             {groups.map((g) => (
-              <div key={g.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+              <li key={g.id} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
                 {editGroup && editGroup.id === g.id ? (
-                  <div className="flex gap-4 items-center flex-1 flex-wrap">
-                    <input 
-                      value={editGroup.name} 
-                      onChange={e => setEditGroup(eg => ({ ...eg, name: e.target.value }))} 
-                      className="border rounded-lg px-3 py-2 w-32" 
-                    />
-                    <div className="flex flex-wrap gap-2">
+                  <>
+                    <input value={editGroup.name} onChange={e => setEditGroup(eg => ({ ...eg, name: e.target.value }))} className="w-full md:w-28 border rounded px-2 py-1 text-sm" />
+                    <div className="flex flex-wrap gap-2 items-center">
                       {weekDays.map(day => (
-                        <label key={day} className={`px-2 py-1 rounded cursor-pointer text-xs ${editGroup.days.includes(day) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}> 
+                        <label key={day} className={`px-2 py-1 rounded-lg cursor-pointer text-xs font-semibold transition ${editGroup.days.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}> 
                           <input type="checkbox" checked={editGroup.days.includes(day)} onChange={() => toggleDay(day, editGroup, setEditGroup)} className="hidden" />
                           {day}
                         </label>
@@ -675,275 +696,184 @@ const AdminPanel = ({
                       type="time"
                       value={editGroup.timeStart || ""}
                       onChange={e => setEditGroup(eg => ({ ...eg, timeStart: e.target.value }))}
-                      className="border rounded-lg px-3 py-2 w-24"
+                      className="w-full md:w-24 border rounded px-2 py-1 text-sm"
                     />
                     <input
                       type="time"
                       value={editGroup.timeEnd || ""}
                       onChange={e => setEditGroup(eg => ({ ...eg, timeEnd: e.target.value }))}
-                      className="border rounded-lg px-3 py-2 w-24"
+                      className="w-full md:w-24 border rounded px-2 py-1 text-sm"
                     />
-                    <div className="flex gap-2">
-                      <button onClick={saveEditGroup} className="text-green-600 hover:text-green-700 p-1">✓</button>
-                      <button onClick={() => setEditGroup(null)} className="text-gray-400 hover:text-gray-600 p-1">✕</button>
-                    </div>
-                  </div>
+                    <button onClick={saveEditGroup} className="text-green-600 font-bold text-xl">✔</button>
+                    <button onClick={() => setEditGroup(null)} className="text-gray-400 font-bold text-xl">✖</button>
+                  </>
                 ) : (
                   <>
-                    <div className="flex-1">
-                      <span className="font-medium">{g.name}</span>
+                    <span className="break-all flex-1">
+                      {g.name}
                       {Array.isArray(g.days) && g.days.length > 0 && (
-                        <span className="text-gray-500 ml-2">({g.days.join(", ")})</span>
+                        <span className="text-xs text-gray-500"> ({g.days.join(", ")})</span>
                       )}
                       {(g.timeStart && g.timeEnd) && (
-                        <span className="text-blue-600 ml-2">
+                        <span className="text-xs text-blue-500 ml-2">
                           {g.timeStart}–{g.timeEnd}
                         </span>
                       )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => startEditGroup(g)} 
-                        className="text-blue-600 hover:text-blue-700 p-1"
-                        title="Редактировать"
-                      >
-                        ✏️
-                      </button>
-                      <button 
-                        onClick={() => askRemoveGroup(g.id, g.name)} 
-                        className="text-red-600 hover:text-red-700 p-1"
-                        title="Удалить"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+                    </span>
+                    <button
+                      onClick={() => startEditGroup(g)}
+                      className="p-2 rounded-lg hover:bg-blue-100 text-blue-500 hover:text-blue-700 transition"
+                      title="Редактировать"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => askRemoveGroup(g.id, g.name)}
+                      className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition"
+                      title="Удалить"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </>
                 )}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
-
       {/* Справочник: Способы оплаты */}
       {tab === "payments" && (
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="mb-10 border-b pb-8">
+          <h3 className="font-bold mb-6 text-blue-700 text-2xl flex items-center gap-2">
+            <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" /><path d="M8 12h8M12 8v8" /></svg>
             Способы оплаты
           </h3>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex gap-4 flex-wrap items-end">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">Название</label>
-                <input 
-                  value={newPayment.label} 
-                  onChange={e => { 
-                    setNewPayment(p => ({ ...p, label: e.target.value })); 
-                    setPaymentErrors(errors => ({ ...errors, label: undefined })); 
-                  }} 
-                  className={`border rounded-lg px-3 py-2 w-40 ${paymentErrors.label ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500`} 
-                  placeholder="Название" 
-                />
-                {paymentErrors.label && <span className="text-red-500 text-xs mt-1">{paymentErrors.label}</span>}
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">Тип</label>
-                <select 
-                  value={newPayment.type} 
-                  onChange={e => setNewPayment(p => ({ ...p, type: e.target.value, value: e.target.value, banks: e.target.value === 'transfer' ? p.banks : [] }))} 
-                  className="border rounded-lg px-3 py-2 w-28 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {paymentTypes.map(pt => (
-                    <option key={pt.value} value={pt.value}>{pt.label}</option>
-                  ))}
-                </select>
-              </div>
-              {newPayment.type === "transfer" && (
-                <>
-                  <div className="flex flex-col">
-                    <label className="text-sm font-medium text-gray-700 mb-1">Банк</label>
-                    <div className="flex gap-2">
-                      <input 
-                        value={bankInput} 
-                        onChange={e => setBankInput(e.target.value)} 
-                        className="border rounded-lg px-3 py-2 w-28 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                        placeholder="Банк" 
-                      />
-                      <button onClick={() => addBankToPayment(false)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm">+</button>
-                    </div>
-                  </div>
-                  {newPayment.banks && newPayment.banks.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {newPayment.banks.map(b => (
-                        <span key={b} className="bg-gray-200 px-2 py-1 rounded text-sm flex items-center gap-1">
-                          {b}
-                          <button onClick={() => removeBankFromPayment(b, false)} className="text-red-600 hover:text-red-800">×</button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-              <button
-                onClick={addPayment}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
-                type="button"
-              >
-                Добавить
-              </button>
+          <div className="flex gap-4 mb-6 flex-wrap items-end bg-[#F5F7FB] rounded-2xl p-6 shadow-lg">
+            <div className="flex flex-col gap-1">
+              <input value={newPayment.label} onChange={e => { setNewPayment(p => ({ ...p, label: e.target.value })); setPaymentErrors(errors => ({ ...errors, label: undefined })); }} className={`border-2 rounded-xl px-3 py-2 w-40 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base ${paymentErrors.label ? "border-red-400" : "border-gray-200"}`} placeholder="Название" />
+              {paymentErrors.label && <span className="text-red-500 text-xs">{paymentErrors.label}</span>}
             </div>
+            <select value={newPayment.type} onChange={e => setNewPayment(p => ({ ...p, type: e.target.value, value: e.target.value, banks: e.target.value === 'transfer' ? p.banks : [] }))} className="border-2 rounded-xl px-3 py-2 w-28 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base">
+              {paymentTypes.map(pt => (
+                <option key={pt.value} value={pt.value}>{pt.label}</option>
+              ))}
+            </select>
+            {newPayment.type === "transfer" && (
+              <>
+                <input value={bankInput} onChange={e => setBankInput(e.target.value)} className="border-2 rounded-xl px-3 py-2 w-28 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base" placeholder="Банк" />
+                <button onClick={() => addBankToPayment(false)} className="bg-gradient-to-r from-blue-200 to-blue-400 hover:from-blue-300 hover:to-blue-500 text-blue-800 px-2 py-1 rounded-lg shadow font-bold text-xs transition-all duration-200">+ банк</button>
+                <ul className="flex gap-1">
+                  {(newPayment.banks || []).map(b => (
+                    <li key={b} className="bg-gray-100 px-2 py-1 rounded flex items-center gap-1 text-xs">
+                      {b}
+                      <button onClick={() => removeBankFromPayment(b, false)} className="text-red-400 hover:text-red-600 ml-1">×</button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <button
+              onClick={addPayment}
+              className="ml-1 flex items-center gap-1 px-3 py-2 rounded-xl bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white font-bold text-base shadow transition-all duration-200 active:scale-95"
+              style={{ minWidth: 36, minHeight: 36 }}
+              type="button"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
           </div>
-          
-          {/* Список способов оплаты */}
-          <div className="space-y-2">
+          <ul className="flex flex-col gap-4">
             {payments.map((m) => (
-              <div key={m.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+              <li key={m.id} className="relative bg-[#F5F7FB] px-8 py-5 rounded-2xl flex items-center gap-6 shadow text-lg font-medium flex-wrap break-all group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl animate-fade-in" style={{ minHeight: 56 }}>
                 {editPayment && editPayment.id === m.id ? (
-                  <div className="flex gap-4 items-center flex-1 flex-wrap">
-                    <input 
-                      value={editPayment.label} 
-                      onChange={e => setEditPayment(ep => ({ ...ep, label: e.target.value }))} 
-                      className="border rounded-lg px-3 py-2 w-32" 
-                    />
-                    <select 
-                      value={editPayment.type} 
-                      onChange={e => setEditPayment(ep => ({ ...ep, type: e.target.value, value: e.target.value, banks: e.target.value === 'transfer' ? ep.banks : [] }))} 
-                      className="border rounded-lg px-3 py-2 w-24"
-                    >
+                  <>
+                    <input value={editPayment.label} onChange={e => setEditPayment(ep => ({ ...ep, label: e.target.value }))} className="w-28 border rounded px-2 py-1 text-sm" />
+                    <select value={editPayment.type} onChange={e => setEditPayment(ep => ({ ...ep, type: e.target.value, value: e.target.value, banks: e.target.value === 'transfer' ? ep.banks : [] }))} className="w-24 border rounded px-2 py-1 text-sm">
                       {paymentTypes.map(pt => (
                         <option key={pt.value} value={pt.value}>{pt.label}</option>
                       ))}
                     </select>
                     {editPayment.type === "transfer" && (
                       <>
-                        <div className="flex gap-2">
-                          <input 
-                            value={bankInput} 
-                            onChange={e => setBankInput(e.target.value)} 
-                            className="border rounded-lg px-3 py-2 w-28" 
-                            placeholder="Банк" 
-                          />
-                          <button onClick={() => addBankToPayment(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm">+</button>
-                        </div>
-                        {editPayment.banks && editPayment.banks.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {editPayment.banks.map(b => (
-                              <span key={b} className="bg-gray-200 px-2 py-1 rounded text-sm flex items-center gap-1">
-                                {b}
-                                <button onClick={() => removeBankFromPayment(b, true)} className="text-red-600 hover:text-red-800">×</button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <input value={bankInput} onChange={e => setBankInput(e.target.value)} className="border-2 rounded-xl px-3 py-2 w-28 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base" placeholder="Банк" />
+                        <button onClick={() => addBankToPayment(true)} className="bg-gradient-to-r from-blue-200 to-blue-400 hover:from-blue-300 hover:to-blue-500 text-blue-800 px-2 py-1 rounded-lg shadow font-bold text-xs transition-all duration-200">+ банк</button>
+                        <ul className="flex gap-1">
+                          {(editPayment.banks || []).map(b => (
+                            <li key={b} className="bg-gray-100 px-2 py-1 rounded flex items-center gap-1 text-xs">
+                              {b}
+                              <button onClick={() => removeBankFromPayment(b, true)} className="text-red-400 hover:text-red-600 ml-1">×</button>
+                            </li>
+                          ))}
+                        </ul>
                       </>
                     )}
-                    <div className="flex gap-2">
-                      <button onClick={saveEditPayment} className="text-green-600 hover:text-green-700 p-1">✓</button>
-                      <button onClick={() => setEditPayment(null)} className="text-gray-400 hover:text-gray-600 p-1">✕</button>
-                    </div>
-                  </div>
+                    <button onClick={saveEditPayment} className="text-green-600 font-bold text-xl">✔</button>
+                    <button onClick={() => setEditPayment(null)} className="text-gray-400 font-bold text-xl">✖</button>
+                  </>
                 ) : (
                   <>
-                    <div className="flex-1">
-                      <span className="font-medium">{m.label}</span>
-                      <span className="text-gray-500 ml-2">({paymentTypes.find(pt => pt.value === m.type)?.label})</span>
+                    <span className="break-all flex-1">{m.label} <span className="text-xs text-gray-400">({paymentTypes.find(pt => pt.value === m.type)?.label})</span>
                       {m.type === "transfer" && m.banks && m.banks.length > 0 && (
-                        <span className="text-blue-600 ml-2">[{m.banks.join(", ")}]</span>
+                        <span className="text-xs text-gray-500 ml-2">[{m.banks.join(", ")}]</span>
                       )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => startEditPayment(m)} 
-                        className="text-blue-600 hover:text-blue-700 p-1"
-                        title="Редактировать"
-                      >
-                        ✏️
-                      </button>
-                      <button 
-                        onClick={() => askRemovePayment(m.id, m.label)} 
-                        className="text-red-600 hover:text-red-700 p-1"
-                        title="Удалить"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+                    </span>
+                    <button onClick={() => startEditPayment(m)} className="p-2 rounded-lg hover:bg-blue-100 text-blue-500 hover:text-blue-700 transition" title="Редактировать">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
+                      </svg>
+                    </button>
+                    <button onClick={() => askRemovePayment(m.id, m.label)} className="p-2 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition" title="Удалить">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </>
                 )}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
-
       {/* Справочник: Условия заморозки */}
       {tab === "freeze" && (
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="mb-10">
+          <h3 className="font-bold mb-6 text-blue-700 text-2xl flex items-center gap-2">
+            <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" /><path d="M8 12h8M12 8v8" /></svg>
             Условия заморозки
           </h3>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4 flex-wrap items-center">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  Максимум дней:
-                  <input 
-                    type="number" 
-                    min={1} 
-                    value={maxDays} 
-                    onChange={e => setMaxDays(Number(e.target.value))} 
-                    className="border rounded-lg px-3 py-2 w-20 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <input 
-                    type="checkbox" 
-                    checked={requireConfirm} 
-                    onChange={e => setRequireConfirm(e.target.checked)} 
-                    className="rounded border-gray-300"
-                  />
-                  Требуется подтверждение
-                </label>
-              </div>
-              <div className="flex gap-4 items-center">
-                <label className="text-sm font-medium text-gray-700">Причины:</label>
-                <div className="flex gap-2">
-                  <input 
-                    value={reasonInput} 
-                    onChange={e => setReasonInput(e.target.value)} 
-                    className="border rounded-lg px-3 py-2 w-36 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                    placeholder="Добавить причину" 
-                  />
-                  <button onClick={addReason} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm">+</button>
-                </div>
-              </div>
-              {reasons.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {reasons.map(r => (
-                    <span key={r} className="bg-gray-200 px-3 py-1 rounded text-sm flex items-center gap-2">
-                      {r}
-                      <button onClick={() => removeReason(r)} className="text-red-600 hover:text-red-800">×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <button 
-                onClick={saveFreezeSettings} 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium self-start"
-              >
-                Сохранить
-              </button>
+          <div className="flex flex-col md:flex-row md:items-center gap-6 bg-white/80 rounded-2xl p-6 shadow-xl border border-gray-100 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+              <label className="text-base font-medium text-gray-700 flex items-center gap-2">
+                Максимум дней:
+                <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(Number(e.target.value))} className="border-2 rounded-xl px-3 py-2 w-20 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base" />
+              </label>
+              <label className="text-base font-medium text-gray-700 flex items-center gap-2">
+                Причины:
+                <input value={reasonInput} onChange={e => setReasonInput(e.target.value)} className="border-2 rounded-xl px-3 py-2 w-36 bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none text-base" placeholder="Добавить причину" />
+                <button onClick={addReason} className="bg-gradient-to-r from-blue-200 to-blue-400 hover:from-blue-300 hover:to-blue-500 text-blue-800 px-3 py-2 rounded-xl shadow font-bold text-base transition-all duration-200">+</button>
+              </label>
+              <ul className="flex gap-2 ml-2">
+                {reasons.map(r => (
+                  <li key={r} className="bg-gray-100 px-2 py-1 rounded flex items-center gap-1 text-xs">
+                    {r}
+                    <button onClick={() => removeReason(r)} className="text-red-400 hover:text-red-600 ml-1">×</button>
+                  </li>
+                ))}
+              </ul>
+              <label className="flex items-center gap-2 text-base font-medium text-gray-700">
+                <input type="checkbox" checked={requireConfirm} onChange={e => setRequireConfirm(e.target.checked)} />
+                Требуется подтверждение
+              </label>
             </div>
+            <button onClick={saveFreezeSettings} className="bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white px-7 py-3 rounded-2xl shadow-xl font-bold text-lg transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-300">Сохранить</button>
           </div>
-          <div className="text-sm text-gray-500">
-            Эти параметры используются при оформлении заморозки в карточке клиента.
-          </div>
+          <div className="text-base text-gray-400 mt-2">Эти параметры используются при оформлении заморозки в карточке клиента.</div>
         </div>
       )}
-
-      <div className="text-sm text-gray-500 text-center mt-8">
-        Все справочники используются в формах клиентов и доступны для редактирования в любой момент.
-      </div>
-
+      <div className="text-base text-gray-400 text-center mt-10">Все справочники используются в формах клиентов и доступны для редактирования в любой момент.</div>
       <ConfirmModal
         open={confirm.open}
         text="Вы уверены, что хотите удалить этот элемент? Это действие нельзя отменить."

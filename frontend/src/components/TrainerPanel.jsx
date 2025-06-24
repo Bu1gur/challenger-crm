@@ -61,22 +61,22 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
   };
 
   return (
-    <div className="max-w-[98vw] 2xl:max-w-[1600px] mx-auto bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-3xl shadow-3xl p-4 sm:p-12 mt-2 sm:mt-10 border border-gray-100 animate-fade-in min-h-[80vh]">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
-        <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-gray-900 mb-2 sm:mb-0 drop-shadow-lg">
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
           Тренеры
         </h2>
         <button
-          className="bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white px-7 py-3 rounded-2xl shadow-xl font-bold text-lg transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
           onClick={() => {
             setEditTrainer(null);
             setShowTrainerModal(true);
           }}
         >
-          + Добавить тренера
+          Добавить тренера
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {trainers.map((trainer) => (
           <TrainerCard
             key={trainer.id}
@@ -98,10 +98,10 @@ const TrainerPanel = ({ clients = [], setClients, groups = [], onAssignTrainer }
         ))}
       </div>
       {trainers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 text-gray-400 animate-fade-in">
-          <span className="text-7xl mb-6">🧑‍🏫</span>
-          <div className="text-2xl font-bold mb-2">Нет тренеров</div>
-          <div className="text-base">Добавьте первого тренера, чтобы начать работу</div>
+        <div className="text-center py-12 text-gray-500">
+          <div className="text-4xl mb-4">🧑‍🏫</div>
+          <div className="text-lg font-medium mb-2">Нет тренеров</div>
+          <div className="text-sm">Добавьте первого тренера, чтобы начать работу</div>
         </div>
       )}
       {showClients && selectedTrainer && (

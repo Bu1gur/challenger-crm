@@ -33,7 +33,10 @@ const ClientPanel = ({
 				if (!res.ok) throw new Error(res.statusText);
 				return res.json();
 			})
-			.then(setClients)
+			.then((data) => {
+				console.log('[CRM] Загруженные клиенты с сервера:', data);
+				setClients(data);
+			})
 			.catch((e) => {
 				setClients([]);
 				setError(e.message);
@@ -48,6 +51,7 @@ const ClientPanel = ({
 
 	// Добавление/редактирование клиента
 	const handleSave = (client) => {
+		console.log("[CRM] handleSave вызван с клиентом:", client);
 		setLoading(true);
 		setError(null);
 		if (client.id) {
@@ -68,22 +72,25 @@ const ClientPanel = ({
 				})
 				.finally(() => setLoading(false));
 		} else {
+			console.log("[CRM] Добавляем нового клиента:", client);
 			fetch(API_ENDPOINTS.CLIENTS, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(client),
 			})
 				.then((res) => {
+					console.log("[CRM] Ответ сервера на POST:", res.status, res.statusText);
 					if (!res.ok) throw new Error(res.statusText);
 					return res.json();
 				})
 				.then((newClient) => {
+					console.log("[CRM] Новый клиент создан:", newClient);
 					setClients((prev) => [...prev, newClient]);
 					fetchClients(); // чтобы синхронизировать с сервером (на всякий случай)
 				})
 				.catch((e) => {
+					console.error("[CRM] Ошибка добавления клиента:", e);
 					setError(e.message);
-					console.error("Ошибка добавления клиента:", e);
 				})
 				.finally(() => setLoading(false));
 		}
@@ -119,9 +126,15 @@ const ClientPanel = ({
 	// Экспорт/импорт и прочее оставляю как есть (работают только с текущим clients)
 
 	const handleAdd = () => setModal({ open: true, editId: null });
-	const handleEdit = (id) => setModal({ open: true, editId: id });
+	const handleView = (id) => {
+		console.log('[CRM] handleView вызван с ID:', id);
+		console.log('[CRM] Доступные клиенты:', clients.map(c => ({ id: c.id, name: c.name, surname: c.surname })));
+		setModal({ open: true, editId: id });
+	}; // Просмотр карточки
+	const handleEdit = (id) => setModal({ open: true, editId: id, forceEdit: true }); // Прямое редактирование
 
 	const editingClient = clients.find((c) => c.id === modal.editId) || null;
+	console.log('[CRM] editingClient:', editingClient, 'modal.editId:', modal.editId, 'clients length:', clients.length);
 
 	// Экспорт клиентов в Excel
 	const handleExportRefs = () => {
@@ -156,27 +169,25 @@ const ClientPanel = ({
 	};
 
 	return (
-		<div
-			className="max-w-[96vw] 2xl:max-w-[1300px] mx-auto bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-3xl shadow-3xl border border-gray-100 animate-fade-in min-h-[80vh] px-[clamp(8px,2vw,24px)] py-[clamp(8px,2vw,24px)] mt-[clamp(4px,1vw,20px)]"
-		>
-			<div className="flex flex-col sm:flex-row justify-between items-center mb-[clamp(10px,2vw,24px)] gap-[clamp(6px,1vw,18px)]">
-				<h2 className="font-black tracking-tight text-gray-900 mb-2 sm:mb-0 drop-shadow-lg text-[clamp(1.5rem,2vw,2.2rem)] leading-tight">
+		<div className="space-y-6">
+			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+				<h2 className="text-2xl font-bold text-gray-900">
 					Клиенты
 				</h2>
-				<div className="flex flex-wrap gap-[clamp(6px,0.8vw,16px)] items-center justify-end w-full sm:w-auto">
+				<div className="flex flex-wrap gap-3 items-center">
 					<button
-						className="bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white px-[clamp(12px,1.2vw,24px)] py-[clamp(8px,0.9vw,16px)] rounded-2xl shadow-xl font-bold text-[clamp(0.95rem,1vw,1.2rem)] transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-300"
+						className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
 						onClick={handleAdd}
 					>
 						+ Добавить клиента
 					</button>
 					<button
-						className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white px-[clamp(10px,1vw,20px)] py-[clamp(8px,0.9vw,16px)] rounded-2xl shadow-xl font-bold text-[clamp(0.95rem,1vw,1.2rem)] transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-300"
+						className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
 						onClick={handleExportRefs}
 					>
 						Экспорт в Excel
 					</button>
-					<label className="bg-gradient-to-r from-yellow-300 to-orange-400 hover:from-yellow-400 hover:to-orange-500 text-white px-[clamp(10px,1vw,20px)] py-[clamp(8px,0.9vw,16px)] rounded-2xl shadow-xl font-bold text-[clamp(0.95rem,1vw,1.2rem)] transition-all duration-200 cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-300 flex items-center">
+					<label className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer">
 						Импорт из Excel
 						<input
 							type="file"
@@ -186,13 +197,17 @@ const ClientPanel = ({
 						/>
 					</label>
 					<button
-						className={`px-[clamp(10px,1vw,20px)] py-[clamp(8px,0.9vw,16px)] rounded-2xl font-bold text-[clamp(0.95rem,1vw,1.2rem)] shadow-xl transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-200 ${showAll ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700 hover:bg-blue-50"}`}
+						className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+							showAll 
+								? "bg-blue-100 text-blue-800" 
+								: "bg-gray-100 text-gray-700 hover:bg-gray-200"
+						}`}
 						onClick={() => setShowAll((v) => !v)}
 					>
 						{showAll ? "Скрыть удалённых" : "Показать всех"}
 					</button>
 					<button
-						className="bg-gradient-to-r from-red-300 to-pink-400 hover:from-red-400 hover:to-pink-500 text-white px-[clamp(10px,1vw,20px)] py-[clamp(8px,0.9vw,16px)] rounded-2xl shadow-xl font-bold text-[clamp(0.95rem,1vw,1.2rem)] transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-200"
+						className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
 						onClick={handleReset}
 					>
 						Сбросить базу
@@ -202,6 +217,7 @@ const ClientPanel = ({
 			<Filters filter={filter} setFilter={setFilter} clients={clients} />
 			<Table
 				clients={filtered}
+				onView={handleView}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				periods={periods}
@@ -209,10 +225,10 @@ const ClientPanel = ({
 				onExtend={handleExtend}
 			/>
 			{filtered.length === 0 && (
-				<div className="flex flex-col items-center justify-center py-24 text-gray-400 animate-fade-in">
-					<span className="text-7xl mb-6">🗂️</span>
-					<div className="text-2xl font-bold mb-2">Нет клиентов</div>
-					<div className="text-base">Добавьте первого клиента, чтобы начать работу</div>
+				<div className="flex flex-col items-center justify-center py-12 text-gray-500">
+					<span className="text-4xl mb-4">📋</span>
+					<div className="text-xl font-medium mb-2">Нет клиентов</div>
+					<div className="text-sm">Добавьте первого клиента, чтобы начать работу</div>
 				</div>
 			)}
 			{modal.open && !isEditMode && !modal.extend && (

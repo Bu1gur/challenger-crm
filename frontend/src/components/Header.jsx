@@ -1,11 +1,15 @@
 // Хедер приложения
 const Header = () => {
   return (
-    <header className="shadow-none p-0 bg-white/80 mb-2 rounded-3xl border border-gray-100 flex items-center justify-between px-10 py-6 animate-fade-in">
-      <span className="text-3xl font-extrabold text-gray-900 tracking-tight drop-shadow-sm select-none">
-        Challenger CRM
-      </span>
-      {/* Здесь могут быть кнопки/профиль/настройки */}
+    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Challenger CRM
+        </h1>
+        <div className="text-sm text-gray-500">
+          Система управления боксерским клубом
+        </div>
+      </div>
     </header>
   );
 };
